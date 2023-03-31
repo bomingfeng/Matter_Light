@@ -1,8 +1,8 @@
 {
     "project_name":       "bootloader",
     "project_path":       "/home/esp-matter/esp/esp-idf/components/bootloader/subproject",
-    "build_dir":          "/home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/light_esp32_c3/test_board/build/bootloader",
-    "config_file":        "/home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/light_esp32_c3/test_board/sdkconfig",
+    "build_dir":          "/home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/light/test_board/build/bootloader",
+    "config_file":        "/home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/light/test_board/sdkconfig",
     "config_defaults":    "",
     "app_elf":            "bootloader.elf",
     "app_bin":            "bootloader.bin",

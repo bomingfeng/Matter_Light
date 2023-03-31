@@ -1,4 +1,4 @@
-# Install script for directory: /home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/light_esp32_c3/run_board/managed_components/espressif__led_strip
+# Install script for directory: /home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/light/run_board/managed_components/espressif__led_strip
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

@@ -1,4 +1,4 @@
-/* * Data converted from /home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/light_esp32_c3/main/WebsiteFiles/favicon.ico
+/* * Data converted from /home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/light/main/WebsiteFiles/favicon.ico
  * (null byte appended)
  */
 .data

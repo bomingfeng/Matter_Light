@@ -1,4 +1,4 @@
-# Install script for directory: /home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/light_esp32_c3/run_board
+# Install script for directory: /home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/light/run_board
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,7 +39,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/light_esp32_c3/run_board/build/esp-idf/cmake_install.cmake")
+  include("/home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/light/run_board/build/esp-idf/cmake_install.cmake")
 
 endif()
 
@@ -51,5 +51,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/light_esp32_c3/run_board/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/light/run_board/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
