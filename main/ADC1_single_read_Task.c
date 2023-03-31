@@ -44,7 +44,7 @@ void ADC1_single_read_Task(void *pvParam)
 #endif
     count++;
     if((count % 5) == 0){
-      if((ADC_average / count) > 145){
+      if((ADC_average / count) > 144){
         xEventGroupSetBits(APP_event_group,APP_event_Low_Battery_BIT);
       }
       else if(xEventGroupGetBits(APP_event_group) != APP_event_Low_Battery_BIT){
