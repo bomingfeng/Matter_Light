@@ -37,14 +37,14 @@ void ADC1_single_read_Task(void *pvParam)
     sse_data[1] = adc_data;
     ESP_LOGI("ADC1","adc1_data:DC%dV.",sse_data[1]);
 #if CONFIG_LOG_DEFAULT_LEVEL_INFO    
-    //ADC_average += 147;
-    ADC_average += adc_data;
+    ADC_average += 147;
+    //ADC_average += adc_data;
 #else
     ADC_average += adc_data;
 #endif
     count++;
     if((count % 5) == 0){
-      if((ADC_average / count) > 144){
+      if((ADC_average / count) > 146){
         xEventGroupSetBits(APP_event_group,APP_event_Low_Battery_BIT);
       }
       else if(xEventGroupGetBits(APP_event_group) != APP_event_Low_Battery_BIT){

@@ -448,7 +448,7 @@ static void vdetectIR_TimersCallback(TimerHandle_t xTimer)
 
 void detectIR_control(void *pvParameters)
 {
-    detectIR_Timers = xTimerCreate("detectIR_Timers",120000/portTICK_PERIOD_MS,pdFALSE,( void * ) 1,vdetectIR_TimersCallback);
+    detectIR_Timers = xTimerCreate("detectIR_Timers",90000/portTICK_PERIOD_MS,pdFALSE,( void * ) 1,vdetectIR_TimersCallback);
     while(1)
     {
         uint16_t endpoint_id = light_endpoint_id;
