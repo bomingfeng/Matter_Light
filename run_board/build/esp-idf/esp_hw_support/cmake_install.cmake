@@ -39,7 +39,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/light/run_board/build/esp-idf/esp_hw_support/port/esp32c3/cmake_install.cmake")
+  include("/home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/matter_light/run_board/build/esp-idf/esp_hw_support/port/esp32c3/cmake_install.cmake")
 
 endif()
 

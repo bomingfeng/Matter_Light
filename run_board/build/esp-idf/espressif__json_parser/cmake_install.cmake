@@ -1,4 +1,4 @@
-# Install script for directory: /home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/light/run_board/managed_components/espressif__json_parser
+# Install script for directory: /home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/matter_light/run_board/managed_components/espressif__json_parser
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

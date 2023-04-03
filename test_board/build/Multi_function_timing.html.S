@@ -1,4 +1,4 @@
-/* * Data converted from /home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/light/main/WebsiteFiles/Multi_function_timing.html
+/* * Data converted from /home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/matter_light/main/WebsiteFiles/Multi_function_timing.html
  * (null byte appended)
  */
 .data

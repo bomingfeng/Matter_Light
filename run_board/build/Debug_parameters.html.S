@@ -1,4 +1,4 @@
-/* * Data converted from /home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/light/main/WebsiteFiles/Debug_parameters.html
+/* * Data converted from /home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/matter_light/main/WebsiteFiles/Debug_parameters.html
  * (null byte appended)
  */
 .data

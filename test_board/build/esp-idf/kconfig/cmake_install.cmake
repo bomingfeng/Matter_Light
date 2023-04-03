@@ -1,4 +1,4 @@
-# Install script for directory: /home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/light/test_board/kconfig
+# Install script for directory: /home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/matter_light/test_board/kconfig
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

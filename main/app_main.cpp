@@ -161,10 +161,9 @@ extern "C" void app_main()
     }  
     else if(WIFI_MODE_STA == enWifiMode){
         APP_event_LED_light_1s();
-        xTaskCreatePinnedToCore(detectIR_control, "detectIR_control", 4096, NULL, ESP_TASK_PRIO_MIN + 2, NULL, tskNO_AFFINITY);
-
         app_driver_handle_t button_handle = app_driver_button_init();
         app_reset_button_register(button_handle);
+
 
         /* Initialize driver */
 //        app_driver_handle_t switch_handle = light_handle;// = app_driver_switch_init();
@@ -218,6 +217,8 @@ extern "C" void app_main()
         if (err != ESP_OK) {
             ESP_LOGE(TAG, "Matter start failed: %d", err);
         }
+
+        xTaskCreatePinnedToCore(detectIR_control, "detectIR_control", 4096, NULL, ESP_TASK_PRIO_MIN + 2, NULL, tskNO_AFFINITY);
 
 
     #if CONFIG_ENABLE_CHIP_SHELL

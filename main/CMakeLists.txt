@@ -1,4 +1,4 @@
-set(PRIV_REQUIRES_LIST device spiffs esp_matter esp_matter_console route_hook app_reset esp_wifi)
+set(PRIV_REQUIRES_LIST device spiffs esp_matter esp_matter_console route_hook app_reset esp_wifi esp_matter_controller)
 
 
 idf_component_register(SRC_DIRS          "."
