@@ -1,3 +1,4 @@
 由于安信可使用REV2的芯片新IDF不支持BLE不能使用
 
 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
+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
