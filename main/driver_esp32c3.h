@@ -23,6 +23,8 @@ extern "C" {
 #endif
 
 led_driver_handle_t led_driver_init_c3(led_driver_config_t *config);
+led_driver_handle_t led_driver_init_ledc(led_driver_config_t *config);
+led_driver_config_t led_driver_get_config_ledc(void);
 button_config_t button_driver_get_config_c3(void);
 esp_err_t led_driver_set_power_c3(led_driver_handle_t handle, bool power);
 

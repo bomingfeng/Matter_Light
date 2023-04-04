@@ -58,6 +58,13 @@ menu "Demo"
 	help
 		?
 
+    config Lights_Control_Mode
+	int "Lights Control Mode"
+	range 0 1
+	default 0
+	help
+            Lights Control Mode 1:GPIO. 0:PWM
+		
     config detectIR_GPIO 
 	int "detectIR_GPIO"
 	range 0 20

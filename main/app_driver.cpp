@@ -73,8 +73,15 @@ static esp_err_t app_driver_light_set_power(led_driver_handle_t handle, esp_matt
     }
     return led_driver_set_power_c3(handle, val->val.b);
 }
-
-
+#if CONFIG_Lights_Control_Mode
+    
+#else
+static esp_err_t app_driver_light_set_brightness(led_driver_handle_t handle, esp_matter_attr_val_t *val)
+{
+    int value = REMAP_TO_RANGE(val->val.u8, MATTER_BRIGHTNESS, STANDARD_BRIGHTNESS);
+    return led_driver_set_brightness(handle, value);
+}
+#endif
 
 #if CONFIG_ENABLE_CHIP_SHELL
 static char console_buffer[101] = {0};
@@ -650,14 +657,24 @@ esp_err_t app_driver_attribute_update(app_driver_handle_t driver_handle, uint16_
                                       uint32_t attribute_id, esp_matter_attr_val_t *val)
 {
     esp_err_t err = ESP_OK;
-    led_driver_handle_t handle = (led_driver_handle_t)driver_handle;
     if (endpoint_id == light_endpoint_id) {
+        led_driver_handle_t handle = (led_driver_handle_t)driver_handle;
         if (cluster_id == OnOff::Id) {
             if (attribute_id == OnOff::Attributes::OnOff::Id) {
                 err = app_driver_light_set_power(handle, val);
             }
-        }
-        /* else if (cluster_id == ColorControl::Id) {
+        } 
+#if CONFIG_Lights_Control_Mode
+    
+#else
+        else if (cluster_id == LevelControl::Id) {
+            if (attribute_id == LevelControl::Attributes::CurrentLevel::Id) {
+                err = app_driver_light_set_brightness(handle, val);
+            }
+        } 
+#endif        
+
+/*        else if (cluster_id == ColorControl::Id) {
             if (attribute_id == ColorControl::Attributes::CurrentHue::Id) {
                 err = app_driver_light_set_hue(handle, val);
             } else if (attribute_id == ColorControl::Attributes::CurrentSaturation::Id) {
@@ -681,12 +698,17 @@ esp_err_t app_driver_light_set_defaults(uint16_t endpoint_id)
     attribute_t *attribute = NULL;
     esp_matter_attr_val_t val = esp_matter_invalid(NULL);
 
+#if CONFIG_Lights_Control_Mode
+    
+#else
     /* Setting brightness */
-  /*  cluster = cluster::get(endpoint, LevelControl::Id);
+    cluster = cluster::get(endpoint, LevelControl::Id);
     attribute = attribute::get(cluster, LevelControl::Attributes::CurrentLevel::Id);
     attribute::get_val(attribute, &val);
     err |= app_driver_light_set_brightness(handle, &val);
-*/
+#endif
+
+
     /* Setting color */
 /*    cluster = cluster::get(endpoint, ColorControl::Id);
     attribute = attribute::get(cluster, ColorControl::Attributes::ColorMode::Id);
@@ -718,14 +740,27 @@ esp_err_t app_driver_light_set_defaults(uint16_t endpoint_id)
     return err;
 }
 
-
+#if CONFIG_Lights_Control_Mode
 app_driver_handle_t app_driver_light_init()
 {
     /* Initialize led */
     led_driver_config_t config;
     led_driver_handle_t handle = led_driver_init_c3(&config);
     return (app_driver_handle_t)handle;
+}    
+#else
+app_driver_handle_t app_driver_light_init_ledc()
+{
+    /* Initialize led */
+    led_driver_config_t config = led_driver_get_config_ledc();
+    led_driver_handle_t handle = led_driver_init_ledc(&config);
+    return (app_driver_handle_t)handle;
 }
+#endif
+
+
+
+
 
 
 
@@ -756,8 +791,37 @@ static void vdetectIR_TimersCallback(TimerHandle_t xTimer)
     Turn_off = true;
 }
 
+#if CONFIG_Lights_Control_Mode
+    
+#else
+void user_LevelControl(uint16_t endpoint_id,uint8_t level)
+{
+    ESP_LOGI(TAG, "user_LevelControl");
+    uint32_t cluster_id = LevelControl::Id;
+    uint32_t attribute_id = LevelControl::Attributes::CurrentLevel::Id;
+
+    node_t *node = node::get();
+    endpoint_t *endpoint = endpoint::get(node, endpoint_id);
+    cluster_t *cluster = cluster::get(endpoint, cluster_id);
+    attribute_t *attribute = attribute::get(cluster, attribute_id);
+
+    esp_matter_attr_val_t val = esp_matter_invalid(NULL);
+    attribute::get_val(attribute, &val);
+    val.val.u8 = level;
+    attribute::update(endpoint_id, cluster_id, attribute_id, &val);
+}
+#endif
+
+
 void detectIR_control(void *pvParameters)
 {
+#if CONFIG_Lights_Control_Mode
+    
+#else
+    bool flag = false;
+    uint8_t level = 0;
+#endif
+
     detectIR_Timers = xTimerCreate("detectIR_Timers",90000/portTICK_PERIOD_MS,pdFALSE,( void * ) 1,vdetectIR_TimersCallback);
     while(1)
     {
@@ -788,6 +852,28 @@ void detectIR_control(void *pvParameters)
         }
         ESP_LOGI(TAG, "detectIR_control:%d",get_detectIR_status());
         vTaskDelay(1000 / portTICK_PERIOD_MS); 
+#if CONFIG_Lights_Control_Mode
+    
+#else
+        if(level >= 200)
+        {
+            flag = true;
+            level = 200;
+        }
+        if(level <= 0)
+        {
+            flag = false;
+            level = 0;
+        }
+        if(flag == false){
+            level +=10; 
+        }
+        else{
+            level -=10; 
+        }
+        user_LevelControl(light_endpoint_id, level);
+#endif        
+
     }
 }
 

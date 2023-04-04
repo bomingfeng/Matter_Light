@@ -134,7 +134,16 @@ extern "C" void app_main()
     wifi_mode_t enWifiMode;
 
     /* Initialize driver */
+#if CONFIG_Lights_Control_Mode
+    
+#else
+
+#endif
+#if CONFIG_Lights_Control_Mode
     app_driver_handle_t light_handle = app_driver_light_init();
+#else
+    app_driver_handle_t light_handle = app_driver_light_init_ledc();
+#endif
 
     APP_event_group = xEventGroupCreate();
     xTaskCreatePinnedToCore(ADC1_single_read_Task, "ADC1", 2048, NULL, ESP_TASK_PRIO_MIN + 1, NULL,tskNO_AFFINITY);//0;1;tskNO_AFFINITY
@@ -175,9 +184,14 @@ extern "C" void app_main()
 
         color_temperature_light::config_t light_config; //esp-matter/components/esp_matter/esp_matter_endpoint.h
         light_config.on_off.on_off = DEFAULT_POWER;
+#if CONFIG_Lights_Control_Mode
+    
+#else
         //light_config.on_off.lighting.start_up_on_off = nullptr;
-        //light_config.level_control.current_level = DEFAULT_BRIGHTNESS;
-        //light_config.level_control.lighting.start_up_current_level = DEFAULT_BRIGHTNESS;
+        light_config.level_control.current_level = DEFAULT_BRIGHTNESS;
+        light_config.level_control.lighting.start_up_current_level = DEFAULT_BRIGHTNESS;
+#endif
+
         //light_config.color_control.color_mode = EMBER_ZCL_COLOR_MODE_COLOR_TEMPERATURE;
         //light_config.color_control.enhanced_color_mode = EMBER_ZCL_COLOR_MODE_COLOR_TEMPERATURE;
         //light_config.color_control.color_temperature.startup_color_temperature_mireds = nullptr;
@@ -217,6 +231,9 @@ extern "C" void app_main()
         if (err != ESP_OK) {
             ESP_LOGE(TAG, "Matter start failed: %d", err);
         }
+
+        /* Starting driver with default values */
+        app_driver_light_set_defaults(light_endpoint_id);
 
         xTaskCreatePinnedToCore(detectIR_control, "detectIR_control", 4096, NULL, ESP_TASK_PRIO_MIN + 2, NULL, tskNO_AFFINITY);
 
