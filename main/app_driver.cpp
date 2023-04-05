@@ -37,9 +37,11 @@ extern uint16_t light_endpoint_id;
 extern uint16_t switch_endpoint_id;
 
 static TimerHandle_t detectIR_Timers;
-
+extern uint32_t sse_data[sse_len];
 static TimerHandle_t QuitTimers;
 static uint8_t BUTTON_DOUBLE_CLICK_count = 0;
+uint8_t reset;
+uint8_t luminance;
 
 static void vQuitTimersCallback(TimerHandle_t xTimer)
 {
@@ -641,16 +643,14 @@ static void app_driver_button_toggle_cb(void *arg, void *data)
         xTimerReset(detectIR_Timers,portMAX_DELAY);
     }
 
-
-
-/*
     client::command_handle_t cmd_handle;
     cmd_handle.cluster_id = OnOff::Id;
     cmd_handle.command_id = OnOff::Commands::Toggle::Id;
     cmd_handle.is_group = false;
     lock::chip_stack_lock(portMAX_DELAY);
     client::cluster_update(switch_endpoint_id, &cmd_handle);
-    lock::chip_stack_unlock();*/
+    lock::chip_stack_unlock();
+
 }
 
 esp_err_t app_driver_attribute_update(app_driver_handle_t driver_handle, uint16_t endpoint_id, uint32_t cluster_id,
@@ -705,6 +705,9 @@ esp_err_t app_driver_light_set_defaults(uint16_t endpoint_id)
     cluster = cluster::get(endpoint, LevelControl::Id);
     attribute = attribute::get(cluster, LevelControl::Attributes::CurrentLevel::Id);
     attribute::get_val(attribute, &val);
+    luminance = REMAP_TO_RANGE(val.val.u8, MATTER_BRIGHTNESS, STANDARD_BRIGHTNESS);
+    sse_data[2] = luminance;
+    ESP_LOGE(TAG, "app_driver_light_set_defaults:%d",luminance);
     err |= app_driver_light_set_brightness(handle, &val);
 #endif
 
@@ -774,8 +777,8 @@ app_driver_handle_t app_driver_button_init()
 
         /* Other initializations */
 #if CONFIG_ENABLE_CHIP_SHELL
-//   app_driver_register_commands();
-//    client::set_command_callback(app_driver_client_command_callback, app_driver_client_group_command_callback, NULL);
+    app_driver_register_commands();
+    client::set_command_callback(app_driver_client_command_callback, app_driver_client_group_command_callback, NULL);
 #endif // CONFIG_ENABLE_CHIP_SHELL
 
     return (app_driver_handle_t)handle;
@@ -794,6 +797,7 @@ static void vdetectIR_TimersCallback(TimerHandle_t xTimer)
 #if CONFIG_Lights_Control_Mode
     
 #else
+
 void user_LevelControl(uint16_t endpoint_id,uint8_t level)
 {
     ESP_LOGI(TAG, "user_LevelControl");
@@ -819,7 +823,7 @@ void detectIR_control(void *pvParameters)
     
 #else
     bool flag = false;
-    uint8_t level = 0;
+    uint8_t level = luminance;
 #endif
 
     detectIR_Timers = xTimerCreate("detectIR_Timers",90000/portTICK_PERIOD_MS,pdFALSE,( void * ) 1,vdetectIR_TimersCallback);
@@ -852,9 +856,21 @@ void detectIR_control(void *pvParameters)
         }
         ESP_LOGI(TAG, "detectIR_control:%d",get_detectIR_status());
         vTaskDelay(1000 / portTICK_PERIOD_MS); 
+        if(reset >= 170){
+            WIFI_Mode_Save(WIFI_MODE_AP);
+            esp_matter::factory_reset();
+        } 
 #if CONFIG_Lights_Control_Mode
     
 #else
+        if(level != luminance)
+        {
+            level = luminance;
+            sse_data[2] = luminance;
+            user_LevelControl(light_endpoint_id, level);
+            ESP_LOGI("TAG","user_LevelControl:%d",level);
+        }
+#if 0
         if(level >= 200)
         {
             flag = true;
@@ -872,6 +888,7 @@ void detectIR_control(void *pvParameters)
             level -=10; 
         }
         user_LevelControl(light_endpoint_id, level);
+#endif
 #endif        
 
     }

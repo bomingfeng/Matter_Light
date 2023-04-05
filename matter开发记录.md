@@ -49,8 +49,16 @@ colorcontrol move-to-saturation 200 0 0 0 0x7283 0x1
 
 colorcontrol move-to-hue 150 0 0 0 0 0x7283 0x1
 
-accesscontrol write acl '[{"fabricIndex": 1, "privilege": 5, "authMode": 2, "subjects": [ 112233, 29315 ], "targets": null}]' 0x5164 0x0
 
+
+0x7283<->(29315);	0x5164<->(20836)
+灯   accesscontrol write acl '[{"privilege": 5, "authMode": 2, "subjects": [ 112233,   29315    ], "targets": null}]' 0x5164	0x0
+										       开关Node_ID			    灯Node_ID			
+
+开关  binding write binding '[{"node": 20836,    "endpoint":1, "cluster":6}]' 0x7283	 0x1
+				            灯Node_ID				    开关Node_ID  灯endpoint
+				            
+				            
 项目目录下的CMakeLists.txt把：set(ZAP_GENERATED_PATH ${CMAKE_CURRENT_LIST_DIR}/../main/zap-generated)
 
 

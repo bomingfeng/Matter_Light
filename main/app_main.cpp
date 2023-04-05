@@ -148,9 +148,9 @@ extern "C" void app_main()
     APP_event_group = xEventGroupCreate();
     xTaskCreatePinnedToCore(ADC1_single_read_Task, "ADC1", 2048, NULL, ESP_TASK_PRIO_MIN + 1, NULL,tskNO_AFFINITY);//0;1;tskNO_AFFINITY
     
-
-    EventBits_t staBits = xEventGroupWaitBits(APP_event_group, APP_event_Low_Battery_BIT,   \
-                                    pdFALSE,pdFALSE,portMAX_DELAY);
+#if !CONFIG_LOG_DEFAULT_LEVEL_INFO    
+    xEventGroupWaitBits(APP_event_group, APP_event_Low_Battery_BIT,pdFALSE,pdFALSE,portMAX_DELAY);
+#endif
 
     /* Initialize the ESP NVS layer */
     nvs_flash_init();
@@ -170,17 +170,16 @@ extern "C" void app_main()
     }  
     else if(WIFI_MODE_STA == enWifiMode){
         APP_event_LED_light_1s();
+        /* Initialize driver */
         app_driver_handle_t button_handle = app_driver_button_init();
         app_reset_button_register(button_handle);
-
-
-        /* Initialize driver */
-//        app_driver_handle_t switch_handle = light_handle;// = app_driver_switch_init();
-       //app_reset_button_register(switch_handle);
 
         /* Create a Matter node and add the mandatory Root Node device type on endpoint 0 */
         node::config_t node_config;
         node_t *node = node::create(&node_config, app_attribute_update_cb, app_identification_cb);
+
+        on_off_switch::config_t switch_config;
+        endpoint_t *endpoint_switch = on_off_switch::create(node, &switch_config, ENDPOINT_FLAG_NONE, button_handle);
 
         color_temperature_light::config_t light_config; //esp-matter/components/esp_matter/esp_matter_endpoint.h
         light_config.on_off.on_off = DEFAULT_POWER;
@@ -195,28 +194,25 @@ extern "C" void app_main()
         //light_config.color_control.color_mode = EMBER_ZCL_COLOR_MODE_COLOR_TEMPERATURE;
         //light_config.color_control.enhanced_color_mode = EMBER_ZCL_COLOR_MODE_COLOR_TEMPERATURE;
         //light_config.color_control.color_temperature.startup_color_temperature_mireds = nullptr;
-        endpoint_t *endpoint = color_temperature_light::create(node, &light_config, ENDPOINT_FLAG_NONE, light_handle);
+        endpoint_t *endpoint_light = color_temperature_light::create(node, &light_config, ENDPOINT_FLAG_NONE, light_handle);
 
-
-//        on_off_switch::config_t switch_config;
-//        endpoint_t *endpoint1 = on_off_switch::create(node, &switch_config, ENDPOINT_FLAG_NONE, switch_handle);
 
 
         /* These node and endpoint handles can be used to create/add other endpoints and clusters. */
-        if (!node || !endpoint) {
+        if (!node || !endpoint_light || !endpoint_switch) {
             ESP_LOGE(TAG, "Matter node creation failed");
         }
 
         /* Add group cluster to the switch endpoint */
-//        cluster::groups::config_t groups_config;
-//        cluster::groups::create(endpoint1, &groups_config, CLUSTER_FLAG_SERVER | CLUSTER_FLAG_CLIENT);
+        cluster::groups::config_t groups_config;
+        cluster::groups::create(endpoint_switch, &groups_config, CLUSTER_FLAG_SERVER | CLUSTER_FLAG_CLIENT);
 
 
-        light_endpoint_id = endpoint::get_id(endpoint);
+        light_endpoint_id = endpoint::get_id(endpoint_light);
         ESP_LOGI(TAG, "Light created with endpoint_id %d", light_endpoint_id);
 
-//        switch_endpoint_id = endpoint::get_id(endpoint1);
-//        ESP_LOGI(TAG, "Switch created with endpoint_id %d", switch_endpoint_id);
+        switch_endpoint_id = endpoint::get_id(endpoint_switch);
+        ESP_LOGI(TAG, "Switch created with endpoint_id %d", switch_endpoint_id);
 
 
         /* Add additional features to the node */
@@ -249,7 +245,17 @@ extern "C" void app_main()
     
     }
     else{
-
+/*
+    #if CONFIG_ESP_MATTER_CONTROLLER_ENABLE
+    #if CONFIG_ESP_MATTER_COMMISSIONER_ENABLE
+        esp_matter::lock::chip_stack_lock(portMAX_DELAY);
+        esp_matter::commissioner::init(5580);
+        esp_matter::lock::chip_stack_unlock();
+    #endif // CONFIG_ESP_MATTER_COMMISSIONER_ENABLE
+        esp_matter::console::controller_register_commands();
+    #endif // CONFIG_ESP_MATTER_CONTROLLER_ENABLE
+    #endif // CONFIG_ENABLE_CHIP_SHELL
+    */
     }
     
 
