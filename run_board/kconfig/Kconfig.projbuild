@@ -85,7 +85,14 @@ menu "Demo"
 	default 1
 	help
 		?
-		
+
+    config Board_Type
+	int "Board Type"
+	range 0 3
+	default 2
+	help
+            1:entrance_guard;2:detectIR;
+            
     config STATION_SSID
         string "Station SSID"
         default "fengboming"

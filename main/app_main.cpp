@@ -30,6 +30,7 @@ esp-matter/connectedhomeip/connectedhomeip/src/include/platform/CHIPDeviceConfig
 #include "htmltomcu.h"
 #include "myWiFi.h"
 #include "ADC1_single_read_Task.h"
+#include "RF433_Task.h"
 
 static const char *TAG = "app_main";
 uint16_t light_endpoint_id = 0;
@@ -134,24 +135,29 @@ extern "C" void app_main()
     wifi_mode_t enWifiMode;
 
     /* Initialize driver */
-#if CONFIG_Lights_Control_Mode
-    
-#else
-
+#if(CONFIG_Board_Type == 1)
+    RF433_GPIO_Init();
+    xTaskCreatePinnedToCore(RF433_Task, "RF433_Task", 4096, NULL, ESP_TASK_PRIO_MIN + 1, NULL, tskNO_AFFINITY);
+    while(1){
+        vTaskDelay(pdMS_TO_TICKS(10000));
+    }
 #endif
+
 #if CONFIG_Lights_Control_Mode
     app_driver_handle_t light_handle = app_driver_light_init();
 #else
     app_driver_handle_t light_handle = app_driver_light_init_ledc();
 #endif
 
+
     APP_event_group = xEventGroupCreate();
+#if(CONFIG_Board_Type == 2)
     xTaskCreatePinnedToCore(ADC1_single_read_Task, "ADC1", 2048, NULL, ESP_TASK_PRIO_MIN + 1, NULL,tskNO_AFFINITY);//0;1;tskNO_AFFINITY
     
 #if !CONFIG_LOG_DEFAULT_LEVEL_INFO    
     xEventGroupWaitBits(APP_event_group, APP_event_Low_Battery_BIT,pdFALSE,pdFALSE,portMAX_DELAY);
 #endif
-
+#endif
     /* Initialize the ESP NVS layer */
     nvs_flash_init();
     HtmlToMcuData = xMessageBufferCreate(100);
