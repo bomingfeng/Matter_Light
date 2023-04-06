@@ -54,7 +54,7 @@ menu "Demo"
     config Lights_GPIO
 	int "Lights_GPIO"
 	range 0 18
-	default 6
+	default 7
 	help
 		?
 
@@ -106,6 +106,13 @@ menu "Demo"
 	default 4
 	help
 		output
+
+    config RF433_close_Guard_Enable_GPIO
+	int "RF433 close Guard Enable GPIO"
+	range 0 20
+	default 6
+	help
+		output		
 
     config RF433_Encoded_One_GPIO
 	int "RF433 Encoded One GPIO"

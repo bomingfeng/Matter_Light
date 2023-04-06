@@ -8,6 +8,7 @@ extern "C" {
 #include "app_inclued.h"
 
 void RF433_GPIO_Init(void);
+void RF433_TX_ready(uint8_t Encoded);
 void RF433_Task(void *pvParam);
 
 #ifdef __cplusplus

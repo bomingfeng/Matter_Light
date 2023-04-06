@@ -36,6 +36,10 @@ static const char *TAG = "app_main";
 uint16_t light_endpoint_id = 0;
 uint16_t switch_endpoint_id = 0;
 
+#if(CONFIG_Board_Type == 1)
+SemaphoreHandle_t RF433_Entrance_Guard_Semaphore;
+#endif
+
 using namespace esp_matter;
 using namespace esp_matter::attribute;
 using namespace esp_matter::endpoint;
@@ -112,7 +116,6 @@ static esp_err_t app_attribute_update_cb(attribute::callback_type_t type, uint16
         app_driver_handle_t driver_handle = (app_driver_handle_t)priv_data;
         err = app_driver_attribute_update(driver_handle, endpoint_id, cluster_id, attribute_id, val);
     }
-
     return err;
 }
 
@@ -127,7 +130,6 @@ EventGroupHandle_t APP_event_group;
 extern MessageBufferHandle_t HtmlToMcuData;
 nvs_handle_t my_handle;
 
-
 extern "C" void app_main()
 {
     esp_err_t err = ESP_OK;
@@ -135,14 +137,6 @@ extern "C" void app_main()
     wifi_mode_t enWifiMode;
 
     /* Initialize driver */
-#if(CONFIG_Board_Type == 1)
-    RF433_GPIO_Init();
-    xTaskCreatePinnedToCore(RF433_Task, "RF433_Task", 4096, NULL, ESP_TASK_PRIO_MIN + 1, NULL, tskNO_AFFINITY);
-    while(1){
-        vTaskDelay(pdMS_TO_TICKS(10000));
-    }
-#endif
-
 #if CONFIG_Lights_Control_Mode
     app_driver_handle_t light_handle = app_driver_light_init();
 #else
@@ -168,6 +162,18 @@ extern "C" void app_main()
     init_spiffs();
     xTaskCreatePinnedToCore(htmltomcudata_task, "htmltomcudata", 4096, NULL, ESP_TASK_PRIO_MIN + 2, NULL,tskNO_AFFINITY);           
     xTaskCreatePinnedToCore(log_task, "log_task", 4096, NULL, ESP_TASK_PRIO_MIN + 1, NULL,tskNO_AFFINITY);//0;1;tskNO_AFFINITY
+    #if(CONFIG_Board_Type == 1)
+        /* Create a mutex type semaphore. */
+        RF433_Entrance_Guard_Semaphore = xSemaphoreCreateMutex();//互斥量创建成功!
+        if( RF433_Entrance_Guard_Semaphore != NULL )
+        {
+            /* The semaphore was created successfully and
+            can be used. */
+        }
+        xSemaphoreGive(RF433_Entrance_Guard_Semaphore);//给出互斥量
+        RF433_GPIO_Init();
+        //xTaskCreatePinnedToCore(RF433_Task, "RF433_Task", 4096, NULL, ESP_TASK_PRIO_MIN + 1, NULL, tskNO_AFFINITY);
+    #endif
 
    	enWifiMode = WIFI_Mode_Check();
     if(WIFI_MODE_AP == WIFI_Mode_Check()){
@@ -184,26 +190,39 @@ extern "C" void app_main()
         node::config_t node_config;
         node_t *node = node::create(&node_config, app_attribute_update_cb, app_identification_cb);
 
+#if(CONFIG_Board_Type == 1)
         on_off_switch::config_t switch_config;
         endpoint_t *endpoint_switch = on_off_switch::create(node, &switch_config, ENDPOINT_FLAG_NONE, button_handle);
 
         color_temperature_light::config_t light_config; //esp-matter/components/esp_matter/esp_matter_endpoint.h
         light_config.on_off.on_off = DEFAULT_POWER;
-#if CONFIG_Lights_Control_Mode
-    
-#else
+#if !CONFIG_Lights_Control_Mode
         //light_config.on_off.lighting.start_up_on_off = nullptr;
         light_config.level_control.current_level = DEFAULT_BRIGHTNESS;
         light_config.level_control.lighting.start_up_current_level = DEFAULT_BRIGHTNESS;
 #endif
-
         //light_config.color_control.color_mode = EMBER_ZCL_COLOR_MODE_COLOR_TEMPERATURE;
         //light_config.color_control.enhanced_color_mode = EMBER_ZCL_COLOR_MODE_COLOR_TEMPERATURE;
         //light_config.color_control.color_temperature.startup_color_temperature_mireds = nullptr;
         endpoint_t *endpoint_light = color_temperature_light::create(node, &light_config, ENDPOINT_FLAG_NONE, light_handle);
+#endif
 
-
-
+#if(CONFIG_Board_Type == 2)
+        color_temperature_light::config_t light_config; //esp-matter/components/esp_matter/esp_matter_endpoint.h
+        light_config.on_off.on_off = DEFAULT_POWER;
+#if !CONFIG_Lights_Control_Mode
+        //light_config.on_off.lighting.start_up_on_off = nullptr;
+        light_config.level_control.current_level = DEFAULT_BRIGHTNESS;
+        light_config.level_control.lighting.start_up_current_level = DEFAULT_BRIGHTNESS;
+#endif
+        //light_config.color_control.color_mode = EMBER_ZCL_COLOR_MODE_COLOR_TEMPERATURE;
+        //light_config.color_control.enhanced_color_mode = EMBER_ZCL_COLOR_MODE_COLOR_TEMPERATURE;
+        //light_config.color_control.color_temperature.startup_color_temperature_mireds = nullptr;
+        endpoint_t *endpoint_light = color_temperature_light::create(node, &light_config, ENDPOINT_FLAG_NONE, light_handle);
+        
+        on_off_switch::config_t switch_config;
+        endpoint_t *endpoint_switch = on_off_switch::create(node, &switch_config, ENDPOINT_FLAG_NONE, button_handle);
+#endif
         /* These node and endpoint handles can be used to create/add other endpoints and clusters. */
         if (!node || !endpoint_light || !endpoint_switch) {
             ESP_LOGE(TAG, "Matter node creation failed");
@@ -213,13 +232,11 @@ extern "C" void app_main()
         cluster::groups::config_t groups_config;
         cluster::groups::create(endpoint_switch, &groups_config, CLUSTER_FLAG_SERVER | CLUSTER_FLAG_CLIENT);
 
-
         light_endpoint_id = endpoint::get_id(endpoint_light);
         ESP_LOGI(TAG, "Light created with endpoint_id %d", light_endpoint_id);
 
         switch_endpoint_id = endpoint::get_id(endpoint_switch);
         ESP_LOGI(TAG, "Switch created with endpoint_id %d", switch_endpoint_id);
-
 
         /* Add additional features to the node */
     /*   cluster_t *cluster = cluster::get(endpoint, ColorControl::Id);
@@ -239,13 +256,11 @@ extern "C" void app_main()
 
         xTaskCreatePinnedToCore(detectIR_control, "detectIR_control", 4096, NULL, ESP_TASK_PRIO_MIN + 2, NULL, tskNO_AFFINITY);
 
-
     #if CONFIG_ENABLE_CHIP_SHELL
         esp_matter::console::diagnostics_register_commands();
         esp_matter::console::wifi_register_commands();
         esp_matter::console::init();
     #endif
-
 
         chip::DeviceLayer::PlatformMgr().ScheduleWork(InitServer, reinterpret_cast<intptr_t>(nullptr));
     
@@ -261,8 +276,6 @@ extern "C" void app_main()
         esp_matter::console::controller_register_commands();
     #endif // CONFIG_ESP_MATTER_CONTROLLER_ENABLE
     #endif // CONFIG_ENABLE_CHIP_SHELL
-    */
+*/
     }
-    
-
 }

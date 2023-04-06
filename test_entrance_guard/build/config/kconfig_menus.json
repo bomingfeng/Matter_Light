@@ -2233,6 +2233,19 @@
                 "children": [],
                 "depends_on": null,
                 "help": "output",
+                "id": "RF433_close_Guard_Enable_GPIO",
+                "name": "RF433_close_Guard_Enable_GPIO",
+                "range": [
+                    0,
+                    20
+                ],
+                "title": "RF433 close Guard Enable GPIO",
+                "type": "int"
+            },
+            {
+                "children": [],
+                "depends_on": null,
+                "help": "output",
                 "id": "RF433_Encoded_One_GPIO",
                 "name": "RF433_Encoded_One_GPIO",
                 "range": [

@@ -57,8 +57,19 @@ colorcontrol move-to-hue 150 0 0 0 0 0x7283 0x1
 
 开关  binding write binding '[{"node": 20836,    "endpoint":1, "cluster":6}]' 0x7283	 0x1
 				            灯Node_ID				    开关Node_ID  灯endpoint
-				            
-				            
+
+
+
+已安装使用皇龙湾玄关射灯："node": 8888(0x22B8),    灯"endpoint":1, "cluster":6		开关"endpoint":2, "cluster":3
+pairing onnetwork 0x22B8 20202021
+accesscontrol write acl '[{"privilege":5,"authMode":2,"subjects":[112233,6666],"targets":null}]' 0x22B8 0x0
+binding write binding '[{"node":6666,"endpoint":2,"cluster":6}]' 0x22B8 0x2
+
+已安装使用皇龙湾大门门禁：本址"node": 6666(0x1A0A),   灯"endpoint":2, "cluster":6	开关"endpoint":1, "cluster":3	
+pairing onnetwork 0x1A0A 20202021	            
+accesscontrol write acl '[{"privilege":5,"authMode":2,"subjects":[112233,8888],"targets":null}]' 0x1A0A 0x0
+binding write binding '[{"node":8888,"endpoint":1,"cluster":6}]' 0x1A0A 0x1
+			            
 项目目录下的CMakeLists.txt把：set(ZAP_GENERATED_PATH ${CMAKE_CURRENT_LIST_DIR}/../main/zap-generated)
 
 

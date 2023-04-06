@@ -52,7 +52,7 @@
 #define CONFIG_RENDEZVOUS_MODE_WIFI 1
 #define CONFIG_RENDEZVOUS_MODE 1
 #define CONFIG_LED_Lights_GPIO 19
-#define CONFIG_Lights_GPIO 6
+#define CONFIG_Lights_GPIO 7
 #define CONFIG_Lights_Control_Mode 0
 #define CONFIG_detectIR_GPIO 18
 #define CONFIG_BUTTON_GPIO_PIN 9
@@ -60,6 +60,7 @@
 #define CONFIG_Board_Type 1
 #define CONFIG_Entrance_Guard_GPIO 5
 #define CONFIG_RF433_Enable_GPIO 4
+#define CONFIG_RF433_close_Guard_Enable_GPIO 6
 #define CONFIG_RF433_Encoded_One_GPIO 0
 #define CONFIG_RF433_Encoded_Two_GPIO 1
 #define CONFIG_RF433_Encoded_Three_GPIO 2

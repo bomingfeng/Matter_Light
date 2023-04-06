@@ -2193,6 +2193,19 @@
             {
                 "children": [],
                 "depends_on": null,
+                "help": "1:entrance_guard;2:detectIR;",
+                "id": "Board_Type",
+                "name": "Board_Type",
+                "range": [
+                    0,
+                    3
+                ],
+                "title": "Board Type",
+                "type": "int"
+            },
+            {
+                "children": [],
+                "depends_on": null,
                 "help": "SSID (network name) for the example to connect to.",
                 "id": "STATION_SSID",
                 "name": "STATION_SSID",

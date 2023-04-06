@@ -108,7 +108,11 @@ void systemRebootTask(void * parameter)
 esp_err_t OTA_index_html_handler(httpd_req_t *req)
 {
     xEventGroupSetBits(APP_event_group,APP_event_Force_off_lights_BIT);
-    gpio_set_level(CONFIG_Lights_GPIO,0);
+
+    #if CONFIG_Lights_Control_Mode
+        gpio_set_level(CONFIG_Lights_GPIO,0);
+    #endif
+
 	ESP_LOGI("OTA", "index.html Requested");
 
 	// Clear this every time page is requested 每次请求页面时清除此内容
@@ -667,7 +671,11 @@ static esp_err_t download_get_handler(httpd_req_t *req)
     //struct stat file_stat;
 
     xEventGroupSetBits(APP_event_group,APP_event_Force_off_lights_BIT);
-    gpio_set_level(CONFIG_Lights_GPIO,0);
+
+    #if CONFIG_Lights_Control_Mode
+        gpio_set_level(CONFIG_Lights_GPIO,0);
+    #endif
+    
 
     const char *filename = get_path_from_uri(filepath, ((struct file_server_data *)req->user_ctx)->base_path,
                                              req->uri, sizeof(filepath));

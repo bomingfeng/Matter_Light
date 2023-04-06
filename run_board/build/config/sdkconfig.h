@@ -57,6 +57,7 @@
 #define CONFIG_detectIR_GPIO 19
 #define CONFIG_BUTTON_GPIO_PIN 9
 #define CONFIG_Battery_Level_GPIO_PIN 1
+#define CONFIG_Board_Type 2
 #define CONFIG_STATION_SSID "fengboming"
 #define CONFIG_STATION_PASSPHRASE "bomingfeng1"
 #define CONFIG_AP_SSID "Automatic_watering"

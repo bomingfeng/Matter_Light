@@ -35,6 +35,9 @@ using namespace esp_matter::cluster;
 static const char *TAG = "app_driver";
 extern uint16_t light_endpoint_id;
 extern uint16_t switch_endpoint_id;
+#if(CONFIG_Board_Type == 1)
+extern SemaphoreHandle_t RF433_Entrance_Guard_Semaphore;
+#endif
 
 static TimerHandle_t detectIR_Timers;
 extern uint32_t sse_data[sse_len];
@@ -42,6 +45,7 @@ static TimerHandle_t QuitTimers;
 static uint8_t BUTTON_DOUBLE_CLICK_count = 0;
 uint8_t reset;
 uint8_t luminance;
+static nvs_handle_t my_handle;
 
 static void vQuitTimersCallback(TimerHandle_t xTimer)
 {
@@ -75,9 +79,7 @@ static esp_err_t app_driver_light_set_power(led_driver_handle_t handle, esp_matt
     }
     return led_driver_set_power_c3(handle, val->val.b);
 }
-#if CONFIG_Lights_Control_Mode
-    
-#else
+#if !CONFIG_Lights_Control_Mode
 static esp_err_t app_driver_light_set_brightness(led_driver_handle_t handle, esp_matter_attr_val_t *val)
 {
     int value = REMAP_TO_RANGE(val->val.u8, MATTER_BRIGHTNESS, STANDARD_BRIGHTNESS);
@@ -650,8 +652,44 @@ static void app_driver_button_toggle_cb(void *arg, void *data)
     lock::chip_stack_lock(portMAX_DELAY);
     client::cluster_update(switch_endpoint_id, &cmd_handle);
     lock::chip_stack_unlock();
-
 }
+
+#if(CONFIG_Board_Type == 1)
+static void Entrance_Guard_driver_button_toggle_cb(void *arg, void *data)
+{
+    if(xSemaphoreTake(RF433_Entrance_Guard_Semaphore,10 / portTICK_PERIOD_MS) == pdTRUE)
+    {
+        ESP_LOGI(TAG, "Entrance_Guard_driver_button_toggle_cb");
+        uint16_t endpoint_id = light_endpoint_id;
+        uint32_t cluster_id = OnOff::Id;
+        uint32_t attribute_id = OnOff::Attributes::OnOff::Id;
+
+        node_t *node = node::get();
+        endpoint_t *endpoint = endpoint::get(node, endpoint_id);
+        cluster_t *cluster = cluster::get(endpoint, cluster_id);
+        attribute_t *attribute = attribute::get(cluster, attribute_id);
+
+        esp_matter_attr_val_t val = esp_matter_invalid(NULL);
+        attribute::get_val(attribute, &val);
+        val.val.b = !val.val.b;
+        attribute::update(endpoint_id, cluster_id, attribute_id, &val);
+        if(val.val.b == true)
+        {
+            xTimerReset(detectIR_Timers,portMAX_DELAY);
+        }
+
+        client::command_handle_t cmd_handle;
+        cmd_handle.cluster_id = OnOff::Id;
+        cmd_handle.command_id = OnOff::Commands::Toggle::Id;
+        cmd_handle.is_group = false;
+        lock::chip_stack_lock(portMAX_DELAY);
+        client::cluster_update(switch_endpoint_id, &cmd_handle);
+        lock::chip_stack_unlock();
+        xSemaphoreGive(RF433_Entrance_Guard_Semaphore); 
+    }
+       
+}
+#endif
 
 esp_err_t app_driver_attribute_update(app_driver_handle_t driver_handle, uint16_t endpoint_id, uint32_t cluster_id,
                                       uint32_t attribute_id, esp_matter_attr_val_t *val)
@@ -664,9 +702,7 @@ esp_err_t app_driver_attribute_update(app_driver_handle_t driver_handle, uint16_
                 err = app_driver_light_set_power(handle, val);
             }
         } 
-#if CONFIG_Lights_Control_Mode
-    
-#else
+#if !CONFIG_Lights_Control_Mode
         else if (cluster_id == LevelControl::Id) {
             if (attribute_id == LevelControl::Attributes::CurrentLevel::Id) {
                 err = app_driver_light_set_brightness(handle, val);
@@ -698,19 +734,47 @@ esp_err_t app_driver_light_set_defaults(uint16_t endpoint_id)
     attribute_t *attribute = NULL;
     esp_matter_attr_val_t val = esp_matter_invalid(NULL);
 
-#if CONFIG_Lights_Control_Mode
-    
-#else
+#if !CONFIG_Lights_Control_Mode
     /* Setting brightness */
     cluster = cluster::get(endpoint, LevelControl::Id);
     attribute = attribute::get(cluster, LevelControl::Attributes::CurrentLevel::Id);
     attribute::get_val(attribute, &val);
-    luminance = REMAP_TO_RANGE(val.val.u8, MATTER_BRIGHTNESS, STANDARD_BRIGHTNESS);
-    sse_data[2] = luminance;
-    ESP_LOGE(TAG, "app_driver_light_set_defaults:%d",luminance);
+
+    // Open
+    ESP_LOGI("app_driver", "Opening Non-Volatile Storage (NVS) handle... ");
+    esp_err_t err1 = nvs_open("storage", NVS_READWRITE, &my_handle);
+    if (err1 != ESP_OK) 
+    {
+       ESP_LOGI("app_driver", "Error (%s) opening NVS handle!\n", esp_err_to_name(err1));
+    }
+    else 
+    {
+        // Read
+        ESP_LOGI("app_driver", "Reading luminance from NVS ... \n");
+        err1 = nvs_get_u8(my_handle, "luminance", &luminance);
+        switch (err1) 
+        {
+            case ESP_OK:
+                sse_data[2] = luminance;
+                break;
+            case ESP_ERR_NVS_NOT_FOUND:
+                ESP_LOGI("app_driver","The value is not initialized yet!\n");
+                luminance = REMAP_TO_RANGE(val.val.u8, MATTER_BRIGHTNESS, STANDARD_BRIGHTNESS);
+                sse_data[2] = luminance;
+                break;
+            default :
+                ESP_LOGI("app_driver","Error (%s) reading!\n", esp_err_to_name(err1));
+                luminance = REMAP_TO_RANGE(val.val.u8, MATTER_BRIGHTNESS, STANDARD_BRIGHTNESS);
+                sse_data[2] = luminance;
+                break;
+        }       
+        // Close
+        nvs_close(my_handle);    
+    }
+    ESP_LOGI(TAG, "app_driver_light_set_defaults:%d",luminance);
+    ESP_LOGI(TAG, "app_driver_light_set_defaults:%d",sse_data[2]);
     err |= app_driver_light_set_brightness(handle, &val);
 #endif
-
 
     /* Setting color */
 /*    cluster = cluster::get(endpoint, ColorControl::Id);
@@ -761,30 +825,6 @@ app_driver_handle_t app_driver_light_init_ledc()
 }
 #endif
 
-
-
-
-
-
-
-app_driver_handle_t app_driver_button_init()
-{
-    /* Initialize button */
-    QuitTimers = xTimerCreate("QuitTimers",4000/portTICK_PERIOD_MS,pdFALSE,( void * ) 2,vQuitTimersCallback);
-    button_config_t config = button_driver_get_config_c3();
-    button_handle_t handle = iot_button_create(&config);
-    iot_button_register_cb(handle, BUTTON_PRESS_DOWN, app_driver_button_toggle_cb, NULL);
-
-        /* Other initializations */
-#if CONFIG_ENABLE_CHIP_SHELL
-    app_driver_register_commands();
-    client::set_command_callback(app_driver_client_command_callback, app_driver_client_group_command_callback, NULL);
-#endif // CONFIG_ENABLE_CHIP_SHELL
-
-    return (app_driver_handle_t)handle;
-
-}
-
 static bool Turn_off = false;
 
 static void vdetectIR_TimersCallback(TimerHandle_t xTimer)
@@ -794,9 +834,30 @@ static void vdetectIR_TimersCallback(TimerHandle_t xTimer)
     Turn_off = true;
 }
 
-#if CONFIG_Lights_Control_Mode
-    
-#else
+app_driver_handle_t app_driver_button_init()
+{
+    /* Initialize button */
+    QuitTimers = xTimerCreate("QuitTimers",4000/portTICK_PERIOD_MS,pdFALSE,( void * ) 2,vQuitTimersCallback);
+    detectIR_Timers = xTimerCreate("detectIR_Timers",90000/portTICK_PERIOD_MS,pdFALSE,( void * ) 1,vdetectIR_TimersCallback);
+    button_config_t config = button_driver_get_config_c3();
+    button_handle_t handle = iot_button_create(&config);
+    iot_button_register_cb(handle, BUTTON_PRESS_DOWN, app_driver_button_toggle_cb, NULL);
+
+#if(CONFIG_Board_Type == 1)
+    button_config_t Entrance_Guard_config = Entrance_Guard_button_driver_get_config_c3();
+    button_handle_t Entrance_Guard_handle = iot_button_create(&Entrance_Guard_config);
+    iot_button_register_cb(Entrance_Guard_handle, BUTTON_PRESS_DOWN, Entrance_Guard_driver_button_toggle_cb, NULL);
+#endif
+        /* Other initializations */
+#if CONFIG_ENABLE_CHIP_SHELL
+    app_driver_register_commands();
+    client::set_command_callback(app_driver_client_command_callback, app_driver_client_group_command_callback, NULL);
+#endif // CONFIG_ENABLE_CHIP_SHELL
+
+    return (app_driver_handle_t)handle;
+}
+
+#if !CONFIG_Lights_Control_Mode
 
 void user_LevelControl(uint16_t endpoint_id,uint8_t level)
 {
@@ -816,23 +877,24 @@ void user_LevelControl(uint16_t endpoint_id,uint8_t level)
 }
 #endif
 
-
 void detectIR_control(void *pvParameters)
 {
-#if CONFIG_Lights_Control_Mode
-    
-#else
-    bool flag = false;
-    uint8_t level = luminance;
+#if(CONFIG_Board_Type == 2)  
+    uint16_t endpoint_id = light_endpoint_id;
+    uint32_t cluster_id = OnOff::Id;
+    uint32_t attribute_id = OnOff::Attributes::OnOff::Id;
+#if !CONFIG_Lights_Control_Mode
+    void *priv_data = endpoint::get_priv_data(endpoint_id);
+    led_driver_handle_t handle = (led_driver_handle_t)priv_data;
 #endif
-
-    detectIR_Timers = xTimerCreate("detectIR_Timers",90000/portTICK_PERIOD_MS,pdFALSE,( void * ) 1,vdetectIR_TimersCallback);
+#endif 
+#if !CONFIG_Lights_Control_Mode
+    uint8_t level;
+    level = luminance;
+#endif
     while(1)
     {
-        uint16_t endpoint_id = light_endpoint_id;
-        uint32_t cluster_id = OnOff::Id;
-        uint32_t attribute_id = OnOff::Attributes::OnOff::Id;
-
+#if(CONFIG_Board_Type == 2) 
         node_t *node = node::get();
         endpoint_t *endpoint = endpoint::get(node, endpoint_id);
         cluster_t *cluster = cluster::get(endpoint, cluster_id);
@@ -845,24 +907,31 @@ void detectIR_control(void *pvParameters)
             xTimerReset(detectIR_Timers,portMAX_DELAY);
             val.val.b = true;
             attribute::update(endpoint_id, cluster_id, attribute_id, &val);
+
+        #if CONFIG_Lights_Control_Mode
             gpio_set_level((gpio_num_t)CONFIG_Lights_GPIO,1);
+        #else
+            led_driver_set_brightness(handle,luminance);
+        #endif
+            
         }
         if((get_detectIR_status() == 0x0) && (val.val.b == true) && (Turn_off == true)){
             ESP_LOGI(TAG, "detectIR_control pressed Turn_off");
             val.val.b = false;
             Turn_off = false;
             attribute::update(endpoint_id, cluster_id, attribute_id, &val);
+
+        #if CONFIG_Lights_Control_Mode
             gpio_set_level((gpio_num_t)CONFIG_Lights_GPIO,0);
+        #else
+            led_driver_set_brightness(handle,0);
+        #endif
+
         }
         ESP_LOGI(TAG, "detectIR_control:%d",get_detectIR_status());
-        vTaskDelay(1000 / portTICK_PERIOD_MS); 
-        if(reset >= 170){
-            WIFI_Mode_Save(WIFI_MODE_AP);
-            esp_matter::factory_reset();
-        } 
-#if CONFIG_Lights_Control_Mode
-    
-#else
+#endif
+#if !CONFIG_Lights_Control_Mode
+
         if(level != luminance)
         {
             level = luminance;
@@ -870,27 +939,11 @@ void detectIR_control(void *pvParameters)
             user_LevelControl(light_endpoint_id, level);
             ESP_LOGI("TAG","user_LevelControl:%d",level);
         }
-#if 0
-        if(level >= 200)
-        {
-            flag = true;
-            level = 200;
-        }
-        if(level <= 0)
-        {
-            flag = false;
-            level = 0;
-        }
-        if(flag == false){
-            level +=10; 
-        }
-        else{
-            level -=10; 
-        }
-        user_LevelControl(light_endpoint_id, level);
-#endif
 #endif        
-
+        if(reset >= 170){
+            WIFI_Mode_Save(WIFI_MODE_AP);
+            esp_matter::factory_reset();
+        } 
+        vTaskDelay(1000 / portTICK_PERIOD_MS); 
     }
 }
-

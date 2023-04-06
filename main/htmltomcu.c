@@ -14,6 +14,7 @@ extern uint8_t reset;
 
 void htmltomcudata_task(void * arg)
 {
+    esp_err_t err;
     char data[96];
     uint8_t i,data_ok,data_len,first_bit = 0,second_bit = 1,first_len,second_len;
 
@@ -376,6 +377,38 @@ void htmltomcudata_task(void * arg)
                     }
                 }
                 ESP_LOGI("htmltomcu","luminance:%d",luminance);
+                sse_data[2] = luminance;
+                // Open
+                ESP_LOGI("htmltomcu", "Opening Non-Volatile Storage (NVS) handle... ");
+                err = nvs_open("storage", NVS_READWRITE, &my_handle);
+                if (err != ESP_OK) {
+                    ESP_LOGI("htmltomcu", "Error (%s) opening NVS handle!\n", esp_err_to_name(err));
+                } else {
+                    ESP_LOGI("htmltomcu", "Done\n");
+                }   
+                // Write
+                ESP_LOGI("htmltomcu", "Updating luminance in NVS ... \n");
+                err=nvs_set_u8(my_handle,"luminance",luminance);
+                if(err != ESP_OK){
+                    ESP_LOGI("htmltomcu","Failed!\r\n");
+                }
+                else{
+                    ESP_LOGI("htmltomcu","Done!\r\n");
+                }
+                // Commit written value.
+                // After setting any values, nvs_commit() must be called to ensure changes are written
+                // to flash storage. Implementations may write to storage at other times,
+                // but this is not guaranteed.
+                ESP_LOGI("htmltomcu", "Committing updates in NVS ... ");
+                err = nvs_commit(my_handle);
+                if(err != ESP_OK){
+                    ESP_LOGI("htmltomcu","Failed!\r\n");
+                }
+                else{
+                    ESP_LOGI("htmltomcu","Done!\r\n");
+                }
+                // Close
+                nvs_close(my_handle);
             }
             else if(data_ok == 13){//restart:7 13
                 first_len = data_len - (first_bit + 8);

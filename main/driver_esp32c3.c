@@ -32,9 +32,10 @@ led_driver_handle_t led_driver_init_c3(led_driver_config_t *config)
 {
     gpio_reset_pin(CONFIG_Lights_GPIO);
     gpio_set_direction(CONFIG_Lights_GPIO, GPIO_MODE_OUTPUT);
-    gpio_set_pull_mode(CONFIG_Lights_GPIO,GPIO_PULLUP_PULLDOWN);
+    gpio_set_pull_mode(CONFIG_Lights_GPIO,GPIO_PULLDOWN_ONLY);
     gpio_set_level(CONFIG_Lights_GPIO,0);
 
+#if(CONFIG_Board_Type == 2)
 #if CONFIG_LOG_DEFAULT_LEVEL_INFO    
     gpio_reset_pin(CONFIG_detectIR_GPIO);
     gpio_set_level(CONFIG_detectIR_GPIO,0);
@@ -46,7 +47,7 @@ led_driver_handle_t led_driver_init_c3(led_driver_config_t *config)
     gpio_set_direction(CONFIG_detectIR_GPIO,GPIO_MODE_INPUT);
     gpio_set_pull_mode(CONFIG_detectIR_GPIO,GPIO_PULLUP_PULLDOWN);
 #endif
-
+#endif
     /* Using (channel + 1) as handle */
     return (led_driver_handle_t) CONFIG_Lights_GPIO;
 }    
@@ -89,6 +90,12 @@ led_driver_handle_t led_driver_init_ledc(led_driver_config_t *config)
 
 led_driver_config_t led_driver_get_config_ledc(void)
 {
+    gpio_reset_pin(CONFIG_Lights_GPIO);
+    gpio_set_direction(CONFIG_Lights_GPIO, GPIO_MODE_OUTPUT);
+    gpio_set_pull_mode(CONFIG_Lights_GPIO,GPIO_PULLUP_ONLY);
+    gpio_set_level(CONFIG_Lights_GPIO,0);
+
+#if(CONFIG_Board_Type == 2)
 #if CONFIG_LOG_DEFAULT_LEVEL_INFO    
     gpio_reset_pin(CONFIG_detectIR_GPIO);
     gpio_set_level(CONFIG_detectIR_GPIO,0);
@@ -100,7 +107,7 @@ led_driver_config_t led_driver_get_config_ledc(void)
     gpio_set_direction(CONFIG_detectIR_GPIO,GPIO_MODE_INPUT);
     gpio_set_pull_mode(CONFIG_detectIR_GPIO,GPIO_PULLUP_PULLDOWN);
 #endif
-
+#endif   
     led_driver_config_t config = {
         .gpio = CONFIG_Lights_GPIO,
         .channel = 1,
@@ -122,6 +129,21 @@ button_config_t button_driver_get_config_c3(void)
     };
     return config;
 }
+
+#if(CONFIG_Board_Type == 1)
+button_config_t Entrance_Guard_button_driver_get_config_c3(void)
+{
+    button_config_t config = {
+        .type = BUTTON_TYPE_GPIO,
+        .gpio_button_config = {
+            .gpio_num = CONFIG_Entrance_Guard_GPIO,
+            .active_level = 0,
+        }
+    };
+    return config;
+}
+#endif
+
 #if CONFIG_Lights_Control_Mode
     
 #else

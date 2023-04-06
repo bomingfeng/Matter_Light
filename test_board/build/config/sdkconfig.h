@@ -57,6 +57,7 @@
 #define CONFIG_detectIR_GPIO 19
 #define CONFIG_BUTTON_GPIO_PIN 9
 #define CONFIG_Battery_Level_GPIO_PIN 1
+#define CONFIG_Board_Type 2
 #define CONFIG_Entrance_Guard_GPIO 5
 #define CONFIG_RF433_Enable_GPIO 4
 #define CONFIG_RF433_Encoded_One_GPIO 0

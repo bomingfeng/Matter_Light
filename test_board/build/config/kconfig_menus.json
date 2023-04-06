@@ -2193,6 +2193,19 @@
             {
                 "children": [],
                 "depends_on": null,
+                "help": "1:entrance_guard;2:detectIR;",
+                "id": "Board_Type",
+                "name": "Board_Type",
+                "range": [
+                    0,
+                    3
+                ],
+                "title": "Board Type",
+                "type": "int"
+            },
+            {
+                "children": [],
+                "depends_on": null,
                 "help": "input",
                 "id": "Entrance_Guard_GPIO",
                 "name": "Entrance_Guard_GPIO",
