@@ -57,13 +57,13 @@ extern EventGroupHandle_t APP_event_group;
 #define APP_event_time_wakeup_sleep_BIT BIT5    // =1 时间唤醒后进入休眠
 #define APP_event_log_spiffs_sleep_BIT BIT21
 #define APP_event_LED_light_BIT  BIT23 // =1 LED常亮
-#define APP_event_next_reboot1_BIT  BIT12
 
 #define APP_event_Low_Battery_BIT BIT5    // =1 时间唤醒后进入休眠
 #define APP_event_Button_wakeup_sleep_BIT BIT4    // =1 按键唤醒后进入休眠
 #define APP_event_Force_off_lights_BIT  BIT13
 #define APP_event_WIFI_STA_CONNECTED_BIT  BIT6  // =1 wifi连接
 #define APP_event_WIFI_AP_CONNECTED_BIT  BIT3   // =1 有设备连接本热点
+#define APP_event_button_toggle_BIT  BIT12
 
 #define APP_event_LED_light_Always_off()  xEventGroupClearBits(APP_event_group,BIT0 | BIT1 | BIT2)//0 常灭
 #define APP_event_LED_light_Breathe()  xEventGroupClearBits(APP_event_group,BIT1 | BIT2);xEventGroupSetBits(APP_event_group,BIT0) // 1 呼吸

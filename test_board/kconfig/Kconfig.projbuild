@@ -68,7 +68,7 @@ menu "Demo"
     config detectIR_GPIO 
 	int "detectIR_GPIO"
 	range 0 20
-	default 19
+	default 6
 	help
 		?
     

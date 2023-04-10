@@ -48,7 +48,7 @@ void ADC1_single_read_Task(void *pvParam)
         xEventGroupSetBits(APP_event_group,APP_event_Low_Battery_BIT);
       }
       else if(xEventGroupGetBits(APP_event_group) != APP_event_Low_Battery_BIT){
-        const int wakeup_time_sec = 30;
+        const int wakeup_time_sec = 18;
         ESP_LOGI("ADC1","Enabling timer wakeup, %dmin", wakeup_time_sec);
         esp_sleep_enable_timer_wakeup(wakeup_time_sec * 60000000);
         ESP_LOGI("ADC1","Entering deep sleep");

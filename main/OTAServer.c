@@ -107,7 +107,7 @@ void systemRebootTask(void * parameter)
 /* Send index.html Page */
 esp_err_t OTA_index_html_handler(httpd_req_t *req)
 {
-    xEventGroupSetBits(APP_event_group,APP_event_Force_off_lights_BIT);
+//    xEventGroupSetBits(APP_event_group,APP_event_Force_off_lights_BIT);
 
     #if CONFIG_Lights_Control_Mode
         gpio_set_level(CONFIG_Lights_GPIO,0);
@@ -660,7 +660,7 @@ static void vQuitTimersCallback(TimerHandle_t xTimer)
 {
     xTimerStop(QuitTimers,portMAX_DELAY);
     page_feed = 1;
-    xEventGroupClearBits(APP_event_group,APP_event_Force_off_lights_BIT);
+    //xEventGroupClearBits(APP_event_group,APP_event_Force_off_lights_BIT);
 }
 
 /* Handler to download a file kept on the server */
@@ -670,7 +670,7 @@ static esp_err_t download_get_handler(httpd_req_t *req)
     //FILE *fd = NULL;
     //struct stat file_stat;
 
-    xEventGroupSetBits(APP_event_group,APP_event_Force_off_lights_BIT);
+    //xEventGroupSetBits(APP_event_group,APP_event_Force_off_lights_BIT);
 
     #if CONFIG_Lights_Control_Mode
         gpio_set_level(CONFIG_Lights_GPIO,0);

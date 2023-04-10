@@ -729,3 +729,7 @@
 441571	441575	1680759116286815418	obj/third_party/connectedhomeip/src/transport/tests/tests.stamp	34a75f982100f291
 441575	441579	1680759116290815553	obj/third_party/connectedhomeip/src/tests.stamp	d3fcceda78d232eb
 441579	441583	1680759116290815553	obj/esp32.stamp	a85d3291eee84f2e
+75	5052	1680878486105000861	obj/third_party/connectedhomeip/src/app/server/libCHIPAppServer.Dnssd.cpp.o	7f809bcc4e202145
+5052	5123	1680878486173020378	obj/third_party/connectedhomeip/src/app/server/lib/libCHIPAppServer.a	1e9c61d0244aa26c
+5123	6493	1680878487337349440	lib/libCHIP.a	f16c6ec8cd45920c
+6493	6498	1680878487557409258	obj/esp32.stamp	a85d3291eee84f2e

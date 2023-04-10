@@ -89,7 +89,7 @@ static void app_event_cb(const ChipDeviceEvent *event, intptr_t arg)
         break;
 
     case 0xc000:
-        APP_event_LED_light_1s();
+        //APP_event_LED_light_1s();
         ESP_LOGI(TAG, "Haven't to connect to a suitable AP now!:0x%x.",event->Type);
         break;    
 
@@ -102,7 +102,7 @@ static void app_event_cb(const ChipDeviceEvent *event, intptr_t arg)
 static esp_err_t app_identification_cb(identification::callback_type_t type, uint16_t endpoint_id, uint8_t effect_id,
                                        void *priv_data)
 {
-    ESP_LOGI(TAG, "Identification callback: type: %d, effect_id: %d, endpoint_id: %d", type, endpoint_id, effect_id);
+    ESP_LOGI(TAG, "Identification callback: type: %d, endpoint_id: %d, effect_id: %d", type, endpoint_id, effect_id);
     return ESP_OK;
 }
 
@@ -110,6 +110,8 @@ static esp_err_t app_attribute_update_cb(attribute::callback_type_t type, uint16
                                          uint32_t attribute_id, esp_matter_attr_val_t *val, void *priv_data)
 {
     esp_err_t err = ESP_OK;
+
+    ESP_LOGI(TAG, "attribute_update callback: type: %d, endpoint_id: %d, cluster_id: %d, attribute_id:%d", type, endpoint_id, cluster_id,attribute_id);
 
     if (type == PRE_UPDATE) {
         /* Driver update */
@@ -223,6 +225,12 @@ extern "C" void app_main()
         on_off_switch::config_t switch_config;
         endpoint_t *endpoint_switch = on_off_switch::create(node, &switch_config, ENDPOINT_FLAG_NONE, button_handle);
 #endif
+/*
+        app_driver_handle_t temperature_sensor_handle;
+        temperature_sensor::config_t temperature_sensor_config;
+        endpoint_t *endpoint_temperature_sensor = temperature_sensor::create(node, &temperature_sensor_config, ENDPOINT_FLAG_NONE, temperature_sensor_handle);
+*/
+
         /* These node and endpoint handles can be used to create/add other endpoints and clusters. */
         if (!node || !endpoint_light || !endpoint_switch) {
             ESP_LOGE(TAG, "Matter node creation failed");

@@ -951,5 +951,5 @@
     "WPA_WPS_STRICT": false,
     "WS_BUFFER_SIZE": 1024,
     "WS_TRANSPORT": true,
-    "detectIR_GPIO": 19
+    "detectIR_GPIO": 6
 }

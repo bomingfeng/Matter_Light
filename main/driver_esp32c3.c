@@ -36,17 +36,17 @@ led_driver_handle_t led_driver_init_c3(led_driver_config_t *config)
     gpio_set_level(CONFIG_Lights_GPIO,0);
 
 #if(CONFIG_Board_Type == 2)
-#if CONFIG_LOG_DEFAULT_LEVEL_INFO    
+/*#if CONFIG_LOG_DEFAULT_LEVEL_INFO    
     gpio_reset_pin(CONFIG_detectIR_GPIO);
     gpio_set_level(CONFIG_detectIR_GPIO,0);
     gpio_set_direction(CONFIG_detectIR_GPIO,GPIO_MODE_OUTPUT);
     gpio_set_pull_mode(CONFIG_detectIR_GPIO,GPIO_PULLUP_PULLDOWN);
-#else
+#else*/
     gpio_reset_pin(CONFIG_detectIR_GPIO);
     gpio_set_level(CONFIG_detectIR_GPIO,0);
     gpio_set_direction(CONFIG_detectIR_GPIO,GPIO_MODE_INPUT);
     gpio_set_pull_mode(CONFIG_detectIR_GPIO,GPIO_PULLUP_PULLDOWN);
-#endif
+//#endif
 #endif
     /* Using (channel + 1) as handle */
     return (led_driver_handle_t) CONFIG_Lights_GPIO;
@@ -96,17 +96,17 @@ led_driver_config_t led_driver_get_config_ledc(void)
     gpio_set_level(CONFIG_Lights_GPIO,0);
 
 #if(CONFIG_Board_Type == 2)
-#if CONFIG_LOG_DEFAULT_LEVEL_INFO    
+/*#if CONFIG_LOG_DEFAULT_LEVEL_INFO    
     gpio_reset_pin(CONFIG_detectIR_GPIO);
     gpio_set_level(CONFIG_detectIR_GPIO,0);
     gpio_set_direction(CONFIG_detectIR_GPIO,GPIO_MODE_OUTPUT);
     gpio_set_pull_mode(CONFIG_detectIR_GPIO,GPIO_PULLUP_PULLDOWN);
-#else
+#else*/
     gpio_reset_pin(CONFIG_detectIR_GPIO);
     gpio_set_level(CONFIG_detectIR_GPIO,0);
     gpio_set_direction(CONFIG_detectIR_GPIO,GPIO_MODE_INPUT);
     gpio_set_pull_mode(CONFIG_detectIR_GPIO,GPIO_PULLUP_PULLDOWN);
-#endif
+//#endif
 #endif   
     led_driver_config_t config = {
         .gpio = CONFIG_Lights_GPIO,
@@ -181,14 +181,14 @@ esp_err_t led_driver_set_power_c3(led_driver_handle_t handle, bool power)
     esp_err_t err;
     current_power = power;
 #if !CONFIG_LOG_DEFAULT_LEVEL_INFO
-    if((xEventGroupGetBits(APP_event_group) & APP_event_Force_off_lights_BIT) == APP_event_Force_off_lights_BIT){
+   /* if((xEventGroupGetBits(APP_event_group) & APP_event_Force_off_lights_BIT) == APP_event_Force_off_lights_BIT){
     #if CONFIG_Lights_Control_Mode
         err = gpio_set_level((gpio_num_t)handle,0);
     #else
         err = led_driver_set_brightness(handle, 0);
     #endif
     }
-    else{
+    else{*/
 #endif
     #if CONFIG_Lights_Control_Mode
         err = gpio_set_level((gpio_num_t)handle,power);
@@ -196,7 +196,7 @@ esp_err_t led_driver_set_power_c3(led_driver_handle_t handle, bool power)
         err = led_driver_set_brightness(handle, current_brightness);
     #endif
 #if !CONFIG_LOG_DEFAULT_LEVEL_INFO
-   }
+ //  }
 #endif   
     return err;
 }
