@@ -40,9 +40,9 @@ pairing code-wifi 0x7283 A412 A41296956 34970112332(蓝牙）)
 
 
 onoff toggle 0x7283 0x1
-onoff toggle 0x1A0A 0x1
+onoff toggle 0x1A0A 0x2
 onoff toggle 0x22B8 0x1
-
+onoff toggle 0xD05 0x1
 onoff on 0x7283 0x1
 
 levelcontrol move-to-level 10 0 0 0 0x7283 0x1
@@ -71,6 +71,15 @@ binding write binding '[{"node":6666,"endpoint":2,"cluster":6}]' 0x22B8 0x2
 pairing onnetwork 0x1A0A 20202021	            
 accesscontrol write acl '[{"privilege":5,"authMode":2,"subjects":[112233,8888],"targets":null}]' 0x1A0A 0x0
 binding write binding '[{"node":8888,"endpoint":1,"cluster":6}]' 0x1A0A 0x1
+
+
+一盏灯两个开关：
+accesscontrol write acl '[{"fabricIndex":1,"privilege":5,"authMode":2,"subjects":[112233,6666(开关Node_ID1),3333(开关Node_ID2)],"targets":null}]' 0x22B8(灯Node_ID) 0
+
+一开关两盏灯(灯的endpoint和cluster必需一样)
+binding write binding '[{"node":6666,"endpoint":1,"cluster":6}，{"node":8888,"endpoint":1,"cluster":6}]' 0xD05 0x1
+			
+			
 			            
 项目目录下的CMakeLists.txt把：set(ZAP_GENERATED_PATH ${CMAKE_CURRENT_LIST_DIR}/../main/zap-generated)
 
