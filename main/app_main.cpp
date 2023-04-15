@@ -31,6 +31,7 @@ esp-matter/connectedhomeip/connectedhomeip/src/include/platform/CHIPDeviceConfig
 #include "myWiFi.h"
 #include "ADC1_single_read_Task.h"
 #include "RF433_Task.h"
+#include "sntp_task.h"
 
 static const char *TAG = "app_main";
 uint16_t light_endpoint_id = 0;
@@ -263,6 +264,10 @@ extern "C" void app_main()
         app_driver_light_set_defaults(light_endpoint_id);
 
         xTaskCreatePinnedToCore(detectIR_control, "detectIR_control", 4096, NULL, ESP_TASK_PRIO_MIN + 2, NULL, tskNO_AFFINITY);
+        
+        #if(CONFIG_Board_Type == 1)
+        xTaskCreatePinnedToCore(sntp_task, "sntp_task", 3072, NULL, ESP_TASK_PRIO_MIN + 1, NULL,tskNO_AFFINITY);
+        #endif
 
     #if CONFIG_ENABLE_CHIP_SHELL
         esp_matter::console::diagnostics_register_commands();

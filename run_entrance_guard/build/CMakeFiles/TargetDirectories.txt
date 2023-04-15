@@ -8,7 +8,7 @@
 /home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/matter_light/run_entrance_guard/build/CMakeFiles/flash.dir
 /home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/matter_light/run_entrance_guard/build/CMakeFiles/encrypted-flash.dir
 /home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/matter_light/run_entrance_guard/build/CMakeFiles/_project_elf_src.dir
-/home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/matter_light/run_entrance_guard/build/CMakeFiles/matter_light_switch.elf.dir
+/home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/matter_light/run_entrance_guard/build/CMakeFiles/run_entrance_guard_matter_light.elf.dir
 /home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/matter_light/run_entrance_guard/build/CMakeFiles/size.dir
 /home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/matter_light/run_entrance_guard/build/CMakeFiles/size-files.dir
 /home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/matter_light/run_entrance_guard/build/CMakeFiles/size-components.dir

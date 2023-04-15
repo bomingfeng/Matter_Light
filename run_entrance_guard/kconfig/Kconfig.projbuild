@@ -61,7 +61,7 @@ menu "Demo"
     config Lights_Control_Mode
 	int "Lights Control Mode"
 	range 0 1
-	default 0
+	default 1
 	help
             Lights Control Mode 1:GPIO. 0:PWM
 		

@@ -1,2 +1,2 @@
 --flash_mode dout --flash_freq 80m --flash_size 8MB
-0x20000 matter_light.bin
+0x20000 test_board_matter_light.bin

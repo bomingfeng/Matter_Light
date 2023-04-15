@@ -53,7 +53,7 @@
 #define CONFIG_RENDEZVOUS_MODE 1
 #define CONFIG_LED_Lights_GPIO 19
 #define CONFIG_Lights_GPIO 7
-#define CONFIG_Lights_Control_Mode 0
+#define CONFIG_Lights_Control_Mode 1
 #define CONFIG_detectIR_GPIO 18
 #define CONFIG_BUTTON_GPIO_PIN 9
 #define CONFIG_Battery_Level_GPIO_PIN 1

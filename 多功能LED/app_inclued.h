@@ -136,9 +136,4 @@ extern EventGroupHandle_t APP_event_group;
 #define APP_event_LED_light_BIT 1
 //最多23BIT
 
-extern RTC_DATA_ATTR uint32_t sleep_keep;
-#define sleep_keep_WIFI_AP_OR_STA_BIT BIT0
-#define sleep_keep_Thermohygrometer_Low_battery_BIT  BIT1
-
-
 #endif /* main_H */

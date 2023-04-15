@@ -1,5 +1,5 @@
 --flash_mode dout --flash_freq 80m --flash_size 8MB
 0x0 bootloader/bootloader.bin
-0x20000 matter_light.bin
+0x20000 test_board_matter_light.bin
 0xc000 partition_table/partition-table.bin
 0x19000 ota_data_initial.bin

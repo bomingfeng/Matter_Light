@@ -49,7 +49,7 @@ extern EventGroupHandle_t APP_event_group;
 #define APP_event_IR_LED_flags_BIT BIT14 // =1 接收到IR数据正确
 #define APP_event_BLE_CONNECTED_flags_BIT BIT15 // =1 接收到ble数据正确
 #define APP_event_ds18b20_CONNECTED_flags_BIT BIT16 // =1 接收到ds18b20数据正确
-#define APP_event_SNTP_ok_flags_BIT BIT17 //=1 时间同步完成。
+
 #define APP_event_Log_msg_ok_flags_BIT BIT18 // =1 可以写数据
 #define APP_event_Button_SINGLE_CLICK_BIT BIT11 // =1 
 #define APP_event_Button_PRESS_REPEAT_BIT BIT19   // =1 按键三按以上
@@ -58,12 +58,14 @@ extern EventGroupHandle_t APP_event_group;
 #define APP_event_log_spiffs_sleep_BIT BIT21
 #define APP_event_LED_light_BIT  BIT23 // =1 LED常亮
 
+
 #define APP_event_Low_Battery_BIT BIT5    // =1 时间唤醒后进入休眠
 #define APP_event_Button_wakeup_sleep_BIT BIT4    // =1 按键唤醒后进入休眠
 #define APP_event_Force_off_lights_BIT  BIT13
 #define APP_event_WIFI_STA_CONNECTED_BIT  BIT6  // =1 wifi连接
 #define APP_event_WIFI_AP_CONNECTED_BIT  BIT3   // =1 有设备连接本热点
 #define APP_event_button_toggle_BIT  BIT12
+#define APP_event_SNTP_ok_flags_BIT BIT17 //=1 时间同步完成。
 
 #define APP_event_LED_light_Always_off()  xEventGroupClearBits(APP_event_group,BIT0 | BIT1 | BIT2)//0 常灭
 #define APP_event_LED_light_Breathe()  xEventGroupClearBits(APP_event_group,BIT1 | BIT2);xEventGroupSetBits(APP_event_group,BIT0) // 1 呼吸
@@ -72,12 +74,7 @@ extern EventGroupHandle_t APP_event_group;
 #define APP_event_LED_light_1s()  xEventGroupClearBits(APP_event_group,BIT0 | BIT1);xEventGroupSetBits(APP_event_group,BIT2) // 4 
 #define APP_event_LED_light_1s5()  xEventGroupClearBits(APP_event_group,BIT1);xEventGroupSetBits(APP_event_group,BIT0 | BIT2) // 5 
 #define APP_event_LED_light_2s()  xEventGroupClearBits(APP_event_group,BIT0);xEventGroupSetBits(APP_event_group,BIT1 | BIT2) // 5
-#define APP_event_LED_light_Always_On()  xEventGroupSetBits(APP_event_group,BIT0 | BIT1 | BIT2)//7 常亮
-
-
-//extern RTC_DATA_ATTR uint32_t sleep_keep;
-#define sleep_keep_WIFI_AP_OR_STA_BIT BIT0
-#define sleep_keep_Thermohygrometer_Low_battery_BIT  BIT1
-
+#define APP_event_LED_light_Always_On()  xEventGroupSetBits(APP_event_group,BIT0 | BIT1 | BIT2)//7 常亮//最多23BIT
+//最多23BIT
 
 #endif /* main_H */

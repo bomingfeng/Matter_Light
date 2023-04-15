@@ -62,10 +62,10 @@ static void vQuitTimersCallback(TimerHandle_t xTimer)
 static esp_err_t app_driver_light_set_power(led_driver_handle_t handle, esp_matter_attr_val_t *val)
 {
     ESP_LOGI("app_driver", "app_driver_light_set_power:%d-%d",BUTTON_DOUBLE_CLICK_count,val->val.b);
+    xTimerReset(detectIR_Timers,portMAX_DELAY);
     if(val->val.b == true){
         xTimerReset(QuitTimers,portMAX_DELAY);
         BUTTON_DOUBLE_CLICK_count++;
-        xTimerReset(detectIR_Timers,portMAX_DELAY);
     }
     if(BUTTON_DOUBLE_CLICK_count == 8){
         WIFI_Mode_Save(WIFI_MODE_AP);
@@ -653,6 +653,7 @@ static void app_driver_button_toggle_cb(void *arg, void *data)
 }
 
 static bool Turn_off = false;
+static bool Switch_Turn_off = false;
 
 #if(CONFIG_Board_Type == 1)
 static void Entrance_Guard_driver_button_toggle_cb(void *arg, void *data)
@@ -833,13 +834,22 @@ static void vdetectIR_TimersCallback(TimerHandle_t xTimer)
     ESP_LOGI(TAG, "vdetectIR_TimersCallback Turn_off");
     xTimerStop(detectIR_Timers,portMAX_DELAY);
     Turn_off = true;
+    Switch_Turn_off  = true;
 }
 
 app_driver_handle_t app_driver_button_init()
 {
     /* Initialize button */
     QuitTimers = xTimerCreate("QuitTimers",4000/portTICK_PERIOD_MS,pdFALSE,( void * ) 2,vQuitTimersCallback);
+
+    #if(CONFIG_Board_Type == 1)
+    detectIR_Timers = xTimerCreate("detectIR_Timers",240000/portTICK_PERIOD_MS,pdFALSE,( void * ) 1,vdetectIR_TimersCallback);
+    #endif
+
+    #if(CONFIG_Board_Type == 2)
     detectIR_Timers = xTimerCreate("detectIR_Timers",180000/portTICK_PERIOD_MS,pdFALSE,( void * ) 1,vdetectIR_TimersCallback);
+    #endif
+
     button_config_t config = button_driver_get_config_c3();
     button_handle_t handle = iot_button_create(&config);
     iot_button_register_cb(handle, BUTTON_PRESS_DOWN, app_driver_button_toggle_cb, NULL);
@@ -884,15 +894,23 @@ void detectIR_control(void *pvParameters)
     client::command_handle_t cmd_handle;
     cmd_handle.cluster_id = OnOff::Id;
     cmd_handle.is_group = false;
-#if(CONFIG_Board_Type == 2)  
+//#if(CONFIG_Board_Type == 2)  
     uint16_t endpoint_id = light_endpoint_id;
     uint32_t cluster_id = OnOff::Id;
     uint32_t attribute_id = OnOff::Attributes::OnOff::Id;
+
+    node_t *node = node::get();
+    endpoint_t *endpoint = endpoint::get(node, endpoint_id);
+    cluster_t *cluster = cluster::get(endpoint, cluster_id);
+    attribute_t *attribute = attribute::get(cluster, attribute_id);
+    esp_matter_attr_val_t val = esp_matter_invalid(NULL);
+    
+
 #if !CONFIG_Lights_Control_Mode
     void *priv_data = endpoint::get_priv_data(endpoint_id);
     led_driver_handle_t handle = (led_driver_handle_t)priv_data;
 #endif
-#endif 
+//#endif 
 #if !CONFIG_Lights_Control_Mode
     uint8_t level;
     level = luminance;
@@ -900,38 +918,32 @@ void detectIR_control(void *pvParameters)
     while(1)
     {
 #if(CONFIG_Board_Type == 2) 
-        node_t *node = node::get();
-        endpoint_t *endpoint = endpoint::get(node, endpoint_id);
-        cluster_t *cluster = cluster::get(endpoint, cluster_id);
-        attribute_t *attribute = attribute::get(cluster, attribute_id);
-
-        esp_matter_attr_val_t val = esp_matter_invalid(NULL);
-        attribute::get_val(attribute, &val);
-        if(get_detectIR_status() != 0x0){
-            vTaskDelay(3 / portTICK_PERIOD_MS);                
-
-            cmd_handle.command_id = OnOff::Commands::On::Id;//Toggle
-            lock::chip_stack_lock(portMAX_DELAY);
-            client::cluster_update(switch_endpoint_id, &cmd_handle);
-            lock::chip_stack_unlock();
-
-            xTimerReset(detectIR_Timers,portMAX_DELAY);
+            attribute::get_val(attribute, &val);
             if((get_detectIR_status() != 0x0) && (val.val.b == false)){// && ((xEventGroupGetBits(APP_event_group) & APP_event_Force_off_lights_BIT) != APP_event_Force_off_lights_BIT)){
+        
                 ESP_LOGI(TAG, "detectIR_control pressed Turn_on");
                 val.val.b = true;
                 attribute::update(endpoint_id, cluster_id, attribute_id, &val);
 
+
+                cmd_handle.command_id = OnOff::Commands::On::Id;//Toggle
+                lock::chip_stack_lock(portMAX_DELAY);
+                client::cluster_update(switch_endpoint_id, &cmd_handle);
+                lock::chip_stack_unlock();
+
+                xTimerReset(detectIR_Timers,portMAX_DELAY);
+           /* 
             #if CONFIG_Lights_Control_Mode
                 gpio_set_level((gpio_num_t)CONFIG_Lights_GPIO,1);
             #else
                 led_driver_set_brightness(handle,luminance);
             #endif
+            */
                 
             }
-        }
-        if(get_detectIR_status() == 0x0){
-            vTaskDelay(3 / portTICK_PERIOD_MS);
-            if((get_detectIR_status() == 0x0) && (val.val.b == true) && (Turn_off == true)){
+            attribute::get_val(attribute, &val);
+            if((val.val.b == true) && (Turn_off == true)){//((get_detectIR_status() == 0x0) && (val.val.b == true) && (Turn_off == true)){
+                attribute::get_val(attribute, &val);
                 ESP_LOGI(TAG, "detectIR_control pressed Turn_off");
                 val.val.b = false;
                 Turn_off = false;
@@ -941,15 +953,17 @@ void detectIR_control(void *pvParameters)
                 lock::chip_stack_lock(portMAX_DELAY);
                 client::cluster_update(switch_endpoint_id, &cmd_handle);
                 lock::chip_stack_unlock();  
+                vTaskDelay(5000 / portTICK_PERIOD_MS); 
 
+            /*
             #if CONFIG_Lights_Control_Mode
                 gpio_set_level((gpio_num_t)CONFIG_Lights_GPIO,0);
             #else
                 led_driver_set_brightness(handle,0);
             #endif
+            */
 
             }
-        }
         ESP_LOGI(TAG, "detectIR_control:%d",get_detectIR_status());
 #endif
 #if !CONFIG_Lights_Control_Mode
@@ -971,5 +985,19 @@ void detectIR_control(void *pvParameters)
             xTimerReset(detectIR_Timers,portMAX_DELAY);
             vTaskDelay(1000 / portTICK_PERIOD_MS); 
         }
+#if(CONFIG_Board_Type == 1) 
+        attribute::get_val(attribute, &val);
+        if((val.val.b == true) && (Switch_Turn_off == true)){//((get_detectIR_status() == 0x0) && (val.val.b == true) && (Turn_off == true)){
+        ESP_LOGI(TAG, "detectIR_control pressed Turn_off");
+        val.val.b = false;
+        Switch_Turn_off = false;
+        attribute::update(endpoint_id, cluster_id, attribute_id, &val);
+
+        cmd_handle.command_id = OnOff::Commands::Off::Id;//Toggle
+        lock::chip_stack_lock(portMAX_DELAY);
+        client::cluster_update(switch_endpoint_id, &cmd_handle);
+        lock::chip_stack_unlock();  
+        }
+#endif
     }
 }

@@ -43,9 +43,9 @@ led_driver_handle_t led_driver_init_c3(led_driver_config_t *config)
     gpio_set_pull_mode(CONFIG_detectIR_GPIO,GPIO_PULLUP_PULLDOWN);
 #else*/
     gpio_reset_pin(CONFIG_detectIR_GPIO);
-    gpio_set_level(CONFIG_detectIR_GPIO,0);
     gpio_set_direction(CONFIG_detectIR_GPIO,GPIO_MODE_INPUT);
-    gpio_set_pull_mode(CONFIG_detectIR_GPIO,GPIO_PULLUP_PULLDOWN);
+    gpio_set_pull_mode(CONFIG_detectIR_GPIO,GPIO_PULLDOWN_ONLY);
+    gpio_set_level(CONFIG_detectIR_GPIO,0);
 //#endif
 #endif
     /* Using (channel + 1) as handle */
@@ -92,7 +92,7 @@ led_driver_config_t led_driver_get_config_ledc(void)
 {
     gpio_reset_pin(CONFIG_Lights_GPIO);
     gpio_set_direction(CONFIG_Lights_GPIO, GPIO_MODE_OUTPUT);
-    gpio_set_pull_mode(CONFIG_Lights_GPIO,GPIO_PULLUP_ONLY);
+    gpio_set_pull_mode(CONFIG_Lights_GPIO,GPIO_PULLDOWN_ONLY);
     gpio_set_level(CONFIG_Lights_GPIO,0);
 
 #if(CONFIG_Board_Type == 2)
@@ -103,9 +103,9 @@ led_driver_config_t led_driver_get_config_ledc(void)
     gpio_set_pull_mode(CONFIG_detectIR_GPIO,GPIO_PULLUP_PULLDOWN);
 #else*/
     gpio_reset_pin(CONFIG_detectIR_GPIO);
-    gpio_set_level(CONFIG_detectIR_GPIO,0);
     gpio_set_direction(CONFIG_detectIR_GPIO,GPIO_MODE_INPUT);
-    gpio_set_pull_mode(CONFIG_detectIR_GPIO,GPIO_PULLUP_PULLDOWN);
+    gpio_set_pull_mode(CONFIG_detectIR_GPIO,GPIO_PULLDOWN_ONLY);
+    gpio_set_level(CONFIG_detectIR_GPIO,0);
 //#endif
 #endif   
     led_driver_config_t config = {

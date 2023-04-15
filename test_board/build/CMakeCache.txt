@@ -162,7 +162,7 @@ CMAKE_PROJECT_DESCRIPTION:STATIC=
 CMAKE_PROJECT_HOMEPAGE_URL:STATIC=
 
 //Value Computed by CMake
-CMAKE_PROJECT_NAME:STATIC=matter_light
+CMAKE_PROJECT_NAME:STATIC=test_board_matter_light
 
 //Path to a program.
 CMAKE_RANLIB:FILEPATH=/home/esp-matter/.espressif/tools/riscv32-esp-elf/esp-2021r2-patch5-8.4.0/riscv32-esp-elf/bin/riscv32-esp-elf-ranlib
@@ -573,6 +573,15 @@ mbedtls_LIB_DEPENDS:STATIC=general;__idf_cxx;general;__idf_newlib;general;__idf_
 
 //Dependencies for the target
 mbedx509_LIB_DEPENDS:STATIC=general;__idf_cxx;general;__idf_newlib;general;__idf_freertos;general;__idf_esp_hw_support;general;__idf_heap;general;__idf_log;general;__idf_lwip;general;__idf_soc;general;__idf_hal;general;__idf_esp_rom;general;__idf_esp_common;general;__idf_esp_system;general;__idf_esp32c3;general;mbedcrypto;
+
+//Value Computed by CMake
+test_board_matter_light_BINARY_DIR:STATIC=/home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/matter_light/test_board/build
+
+//Value Computed by CMake
+test_board_matter_light_IS_TOP_LEVEL:STATIC=ON
+
+//Value Computed by CMake
+test_board_matter_light_SOURCE_DIR:STATIC=/home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/matter_light/test_board
 
 
 ########################

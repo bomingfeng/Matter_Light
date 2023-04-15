@@ -668,7 +668,7 @@
     "LWIP_TIMERS_ONDEMAND": true,
     "LWIP_UDP_RECVMBOX_SIZE": 6,
     "LWIP_USE_ONLY_LWIP_SELECT": false,
-    "Lights_Control_Mode": 0,
+    "Lights_Control_Mode": 1,
     "Lights_GPIO": 7,
     "MAX_BINDINGS": 8,
     "MAX_CONNECTIONS": 8,
