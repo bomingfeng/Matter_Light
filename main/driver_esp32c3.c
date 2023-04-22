@@ -45,7 +45,7 @@ led_driver_handle_t led_driver_init_c3(led_driver_config_t *config)
     gpio_reset_pin(CONFIG_detectIR_GPIO);
     gpio_set_direction(CONFIG_detectIR_GPIO,GPIO_MODE_INPUT);
     gpio_set_pull_mode(CONFIG_detectIR_GPIO,GPIO_PULLDOWN_ONLY);
-    gpio_set_level(CONFIG_detectIR_GPIO,0);
+//    gpio_set_level(CONFIG_detectIR_GPIO,0);
 //#endif
 #endif
     /* Using (channel + 1) as handle */
@@ -105,7 +105,7 @@ led_driver_config_t led_driver_get_config_ledc(void)
     gpio_reset_pin(CONFIG_detectIR_GPIO);
     gpio_set_direction(CONFIG_detectIR_GPIO,GPIO_MODE_INPUT);
     gpio_set_pull_mode(CONFIG_detectIR_GPIO,GPIO_PULLDOWN_ONLY);
-    gpio_set_level(CONFIG_detectIR_GPIO,0);
+//    gpio_set_level(CONFIG_detectIR_GPIO,0);
 //#endif
 #endif   
     led_driver_config_t config = {
@@ -150,6 +150,7 @@ button_config_t Entrance_Guard_button_driver_get_config_c3(void)
 esp_err_t led_driver_set_brightness(led_driver_handle_t handle, uint8_t brightness)
 {
     esp_err_t err;
+    uint8_t temp,tempbri = 0;
     int channel = (int)handle - 1;
     if (channel < 0) {
         ESP_LOGE(TAG, "Invalid handle");
@@ -163,15 +164,44 @@ esp_err_t led_driver_set_brightness(led_driver_handle_t handle, uint8_t brightne
         brightness = 0;
     }
 
-    err = ledc_set_duty(LEDC_LOW_SPEED_MODE, channel, brightness);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "ledc_set_duty failed");
+    if (brightness != 0){
+        
+        for(temp = 0;temp < 19;temp++){
+            tempbri += brightness / 20;
+            err = ledc_set_duty(LEDC_LOW_SPEED_MODE, channel, tempbri);
+            if (err != ESP_OK) {
+                ESP_LOGE(TAG, "ledc_set_duty failed");
+            }
+
+            err = ledc_update_duty(LEDC_LOW_SPEED_MODE, channel);
+            if (err != ESP_OK) {
+                ESP_LOGE(TAG, "ledc_update_duty failed");
+            }
+            vTaskDelay(100 / portTICK_PERIOD_MS);
+        }
+        err = ledc_set_duty(LEDC_LOW_SPEED_MODE, channel, brightness);
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "ledc_set_duty failed");
+        }
+
+        err = ledc_update_duty(LEDC_LOW_SPEED_MODE, channel);
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "ledc_update_duty failed");
+        }
+    }
+    else{
+        err = ledc_set_duty(LEDC_LOW_SPEED_MODE, channel, brightness);
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "ledc_set_duty failed");
+        }
+
+        err = ledc_update_duty(LEDC_LOW_SPEED_MODE, channel);
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "ledc_update_duty failed");
+        }
     }
 
-    err = ledc_update_duty(LEDC_LOW_SPEED_MODE, channel);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "ledc_update_duty failed");
-    }
+
     return err;
 }
 #endif

@@ -266,7 +266,7 @@ extern "C" void app_main()
         xTaskCreatePinnedToCore(detectIR_control, "detectIR_control", 4096, NULL, ESP_TASK_PRIO_MIN + 2, NULL, tskNO_AFFINITY);
         
         #if(CONFIG_Board_Type == 1)
-        xTaskCreatePinnedToCore(sntp_task, "sntp_task", 3072, NULL, ESP_TASK_PRIO_MIN + 1, NULL,tskNO_AFFINITY);
+        //xTaskCreatePinnedToCore(sntp_task, "sntp_task", 3072, NULL, ESP_TASK_PRIO_MIN + 1, NULL,tskNO_AFFINITY);
         #endif
 
     #if CONFIG_ENABLE_CHIP_SHELL

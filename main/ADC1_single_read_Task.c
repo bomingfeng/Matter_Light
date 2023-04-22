@@ -37,18 +37,18 @@ void ADC1_single_read_Task(void *pvParam)
     sse_data[1] = adc_data;
     ESP_LOGI("ADC1","adc1_data:DC%dV.",sse_data[1]);
 #if CONFIG_LOG_DEFAULT_LEVEL_INFO    
-    ADC_average += 147;
+    ADC_average += 145;
     //ADC_average += adc_data;
 #else
     ADC_average += adc_data;
 #endif
     count++;
     if((count % 5) == 0){
-      if((ADC_average / count) > 146){
+      if((ADC_average / count) > 144){
         xEventGroupSetBits(APP_event_group,APP_event_Low_Battery_BIT);
       }
       else if(xEventGroupGetBits(APP_event_group) != APP_event_Low_Battery_BIT){
-        const int wakeup_time_sec = 18;
+        const int wakeup_time_sec = 13;
         ESP_LOGI("ADC1","Enabling timer wakeup, %dmin", wakeup_time_sec);
         esp_sleep_enable_timer_wakeup(wakeup_time_sec * 60000000);
         ESP_LOGI("ADC1","Entering deep sleep");

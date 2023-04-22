@@ -131,7 +131,7 @@ menu "Demo"
     config RF433_Encoded_Four_GPIO
 	int "RF433 Encoded Four GPIO"
 	range 0 20
-	default 3
+	default 7
 	help
 		output
 							

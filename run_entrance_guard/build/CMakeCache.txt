@@ -548,15 +548,6 @@ esp-idf_IS_TOP_LEVEL:STATIC=OFF
 esp-idf_SOURCE_DIR:STATIC=/home/esp-matter/esp/esp-idf
 
 //Value Computed by CMake
-matter_light_switch_BINARY_DIR:STATIC=/home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/matter_light/run_entrance_guard/build
-
-//Value Computed by CMake
-matter_light_switch_IS_TOP_LEVEL:STATIC=ON
-
-//Value Computed by CMake
-matter_light_switch_SOURCE_DIR:STATIC=/home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/matter_light/run_entrance_guard
-
-//Value Computed by CMake
 mbed TLS_BINARY_DIR:STATIC=/home/esp-matter/esp/Project/ai_thinker_esp32c3_no_ble/matter_light/run_entrance_guard/build/esp-idf/mbedtls/mbedtls
 
 //Value Computed by CMake

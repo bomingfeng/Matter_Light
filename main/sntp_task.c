@@ -17,13 +17,76 @@
 static void obtain_time(void);
 static void initialize_sntp(void);
 
+static uint8_t startHour = 21;
+static uint8_t endHour = 7;
+static struct tm starttimeinfo;
+static struct tm endtimeinfo;
+
+static bool isInTime(uint8_t now)
+{
+	// 过夜
+	if(endHour < startHour) 
+	{  
+		if(now >= endHour && now < startHour) 
+		{  
+			return false;  //不在时间段内;
+		} 
+		else 
+		{  
+			return true;  //在时间段内;
+		}  
+	}   
+	// 当天
+	else 
+	{  
+		if(now >= startHour && now < endHour) 
+		{  
+			return true;  //在时间段内;
+		} 
+		else 
+		{  
+			return false;  //不在时间段内;
+		}  
+	}  	
+}
+
+static bool isInTmTime(struct tm timeinfo)
+{
+	// 过夜
+	if((endtimeinfo.tm_sec < starttimeinfo.tm_sec) && (endtimeinfo.tm_min < starttimeinfo.tm_min) && (endtimeinfo.tm_hour < starttimeinfo.tm_hour)) 
+	{  
+		if((timeinfo.tm_sec >= endtimeinfo.tm_sec) && (timeinfo.tm_min >= endtimeinfo.tm_min) && (timeinfo.tm_hour >= endtimeinfo.tm_hour) &&   \
+            (timeinfo.tm_sec < starttimeinfo.tm_sec) && (timeinfo.tm_min < starttimeinfo.tm_min) && (timeinfo.tm_hour < starttimeinfo.tm_hour)) 
+		{  
+			return false;  //不在时间段内;
+		} 
+		else 
+		{  
+			return true;  //在时间段内;
+		} 
+	}   
+	// 当天
+	else 
+	{  
+		if((timeinfo.tm_sec >= starttimeinfo.tm_sec) && (timeinfo.tm_min >= starttimeinfo.tm_min) && (timeinfo.tm_hour >= starttimeinfo.tm_hour) && \
+            (timeinfo.tm_sec < endtimeinfo.tm_sec) && (timeinfo.tm_min < endtimeinfo.tm_min) && (timeinfo.tm_hour < endtimeinfo.tm_hour)) 
+		{  
+			return true;  //在时间段内;
+		} 
+		else 
+		{  
+			return false;  //不在时间段内;
+		}  
+	}  	
+}
+
 void sntp_task(void *pvParam)
 {
     time_t now;
     struct tm timeinfo;
     char strftime_buf[64];
 
-    xEventGroupClearBits(APP_event_group,APP_event_SNTP_ok_flags_BIT);
+    xEventGroupSetBits(APP_event_group,APP_event_Entrance_Guard_Enable_BIT);
     xEventGroupWaitBits(APP_event_group, \
                 APP_event_WIFI_STA_CONNECTED_BIT, \
                 pdFALSE,                               \
@@ -35,6 +98,7 @@ void sntp_task(void *pvParam)
     while (sntp_get_sync_status() == SNTP_SYNC_STATUS_RESET) {
         ESP_LOGI("sntp","Waiting for system time to be set...\r\n");
         vTaskDelay(5000 / portTICK_PERIOD_MS);
+
     }
 
     // Set timezone to Eastern Standard Time and print local time
@@ -47,13 +111,18 @@ void sntp_task(void *pvParam)
     tzset();
     vTaskDelay(100 / portTICK_PERIOD_MS);
     xEventGroupSetBits(APP_event_group,APP_event_SNTP_ok_flags_BIT);
+
+    //xEventGroupClearBits(APP_event_group,APP_event_Entrance_Guard_Enable_BIT);
+
     while(1)
     {
         time(&now);
         localtime_r(&now, &timeinfo);
         strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
-        printf("The current date/time in Shanghai is: %s.\r\n", strftime_buf);
-        vTaskDelay(8000 / portTICK_PERIOD_MS);
+        ESP_LOGI("sntp_task", "The current date/time in Shanghai is: %s.\r\n", strftime_buf);
+        vTaskDelay(10000 / portTICK_PERIOD_MS);
+        isInTime(8);
+        isInTmTime(timeinfo);
     }
 
 }
