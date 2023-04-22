@@ -22,6 +22,8 @@
 21。git remote add origin 仓库地址：添加远程仓库地址
 22。git push -u origin master： 提交到远程仓库的master主干
 23。git remote rm origin 删除远程仓库网址
+24。git submodule update --init --recursive 更新子模块
+git clone --recurse-submodules
 
 
 分支管理：
